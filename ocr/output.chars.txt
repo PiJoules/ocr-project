@@ -1,0 +1,306 @@
+Loading training set: 74.1214580536 seconds
+Iteration 1, loss = 4.17199958
+Iteration 2, loss = 4.15459185
+Iteration 3, loss = 4.14328777
+Iteration 4, loss = 4.12928733
+Iteration 5, loss = 4.11617668
+Iteration 6, loss = 4.11185516
+Iteration 7, loss = 4.09411897
+Iteration 8, loss = 4.07479183
+Iteration 9, loss = 4.05927939
+Iteration 10, loss = 4.05184971
+Iteration 11, loss = 4.03351300
+Iteration 12, loss = 4.01544337
+Iteration 13, loss = 4.00180750
+Iteration 14, loss = 3.98414776
+Iteration 15, loss = 3.96630774
+Iteration 16, loss = 3.94920411
+Iteration 17, loss = 3.92973976
+Iteration 18, loss = 3.90256349
+Iteration 19, loss = 3.87757309
+Iteration 20, loss = 3.85503304
+Iteration 21, loss = 3.82831028
+Iteration 22, loss = 3.79732174
+Iteration 23, loss = 3.77103640
+Iteration 24, loss = 3.74858505
+Iteration 25, loss = 3.72491113
+Iteration 26, loss = 3.69354946
+Iteration 27, loss = 3.66312853
+Iteration 28, loss = 3.67361599
+Iteration 29, loss = 3.62580724
+Iteration 30, loss = 3.60128345
+Iteration 31, loss = 3.58871163
+Iteration 32, loss = 3.56251771
+Iteration 33, loss = 3.53180116
+Iteration 34, loss = 3.51100973
+Iteration 35, loss = 3.49907714
+Iteration 36, loss = 3.48189372
+Iteration 37, loss = 3.45670397
+Iteration 38, loss = 3.44607428
+Iteration 39, loss = 3.45462653
+Iteration 40, loss = 3.42308353
+Iteration 41, loss = 3.41024839
+Iteration 42, loss = 3.40221791
+Iteration 43, loss = 3.39005914
+Iteration 44, loss = 3.37079548
+Iteration 45, loss = 3.36063324
+Iteration 46, loss = 3.35197653
+Iteration 47, loss = 3.34688918
+Iteration 48, loss = 3.33826669
+Iteration 49, loss = 3.34710520
+Iteration 50, loss = 3.33276630
+Iteration 51, loss = 3.30879287
+Iteration 52, loss = 3.31154872
+Iteration 53, loss = 3.29808710
+Iteration 54, loss = 3.28403571
+Iteration 55, loss = 3.27217087
+Iteration 56, loss = 3.28571303
+Iteration 57, loss = 3.28597278
+Iteration 58, loss = 3.26635813
+Iteration 59, loss = 3.25461035
+Iteration 60, loss = 3.25739872
+Iteration 61, loss = 3.23918898
+Iteration 62, loss = 3.22283018
+Iteration 63, loss = 3.22117706
+Iteration 64, loss = 3.21916308
+Iteration 65, loss = 3.21151692
+Iteration 66, loss = 3.20225994
+Iteration 67, loss = 3.21111121
+Iteration 68, loss = 3.21047821
+Iteration 69, loss = 3.18680023
+Iteration 70, loss = 3.18194085
+Iteration 71, loss = 3.18544243
+Iteration 72, loss = 3.17693830
+Iteration 73, loss = 3.15212922
+Iteration 74, loss = 3.15679934
+Iteration 75, loss = 3.14925178
+Iteration 76, loss = 3.13338299
+Iteration 77, loss = 3.15684666
+Iteration 78, loss = 3.13966913
+Iteration 79, loss = 3.12986157
+Iteration 80, loss = 3.11811313
+Iteration 81, loss = 3.11329130
+Iteration 82, loss = 3.11599806
+Iteration 83, loss = 3.11021776
+Iteration 84, loss = 3.10274671
+Iteration 85, loss = 3.09853389
+Iteration 86, loss = 3.10809409
+Iteration 87, loss = 3.10294009
+Iteration 88, loss = 3.07539909
+Iteration 89, loss = 3.07576574
+Iteration 90, loss = 3.08683717
+Iteration 91, loss = 3.06356947
+Iteration 92, loss = 3.05572140
+Iteration 93, loss = 3.06155267
+Iteration 94, loss = 3.04489014
+Iteration 95, loss = 3.06444768
+Iteration 96, loss = 3.03360741
+Iteration 97, loss = 3.03094211
+Iteration 98, loss = 3.02526683
+Iteration 99, loss = 3.02579975
+Iteration 100, loss = 3.01187403
+Iteration 101, loss = 3.02535206
+Iteration 102, loss = 3.04514408
+Iteration 103, loss = 3.01184859
+Training loss did not improve more than tol=0.000100 for two consecutive epochs. Stopping.
+expected:  c
+prediction:  ['c']
+expected:  C
+prediction:  ['C']
+expected:  5
+prediction:  ['A']
+expected:  B
+prediction:  ['g']
+expected:  j
+prediction:  ['I']
+expected:  G
+prediction:  ['d']
+expected:  3
+prediction:  ['S']
+expected:  0
+prediction:  ['c']
+expected:  F
+prediction:  ['U']
+expected:  S
+prediction:  ['S']
+expected:  T
+prediction:  ['T']
+expected:  T
+prediction:  ['T']
+expected:  e
+prediction:  ['v']
+expected:  k
+prediction:  ['A']
+expected:  Q
+prediction:  ['R']
+expected:  a
+prediction:  ['k']
+expected:  R
+prediction:  ['W']
+expected:  n
+prediction:  ['W']
+expected:  6
+prediction:  ['G']
+expected:  3
+prediction:  ['S']
+expected:  F
+prediction:  ['C']
+expected:  Y
+prediction:  ['J']
+expected:  9
+prediction:  ['Y']
+expected:  T
+prediction:  ['9']
+expected:  N
+prediction:  ['W']
+expected:  d
+prediction:  ['g']
+expected:  n
+prediction:  ['e']
+expected:  y
+prediction:  ['g']
+expected:  Z
+prediction:  ['E']
+expected:  a
+prediction:  ['A']
+expected:  r
+prediction:  ['1']
+expected:  m
+prediction:  ['m']
+expected:  4
+prediction:  ['v']
+expected:  H
+prediction:  ['M']
+expected:  s
+prediction:  ['s']
+expected:  e
+prediction:  ['t']
+expected:  S
+prediction:  ['S']
+expected:  9
+prediction:  ['S']
+expected:  w
+prediction:  ['W']
+expected:  t
+prediction:  ['c']
+expected:  C
+prediction:  ['U']
+expected:  J
+prediction:  ['9']
+expected:  E
+prediction:  ['r']
+expected:  X
+prediction:  ['K']
+expected:  w
+prediction:  ['H']
+expected:  t
+prediction:  ['c']
+expected:  Y
+prediction:  ['J']
+expected:  y
+prediction:  ['q']
+expected:  F
+prediction:  ['f']
+expected:  T
+prediction:  ['J']
+expected:  e
+prediction:  ['e']
+expected:  p
+prediction:  ['9']
+expected:  z
+prediction:  ['y']
+expected:  g
+prediction:  ['k']
+expected:  R
+prediction:  ['8']
+expected:  Y
+prediction:  ['5']
+expected:  m
+prediction:  ['d']
+expected:  W
+prediction:  ['d']
+expected:  0
+prediction:  ['e']
+expected:  A
+prediction:  ['g']
+expected:  D
+prediction:  ['O']
+expected:  s
+prediction:  ['k']
+expected:  C
+prediction:  ['C']
+expected:  Y
+prediction:  ['J']
+expected:  Y
+prediction:  ['9']
+expected:  z
+prediction:  ['8']
+expected:  d
+prediction:  ['d']
+expected:  S
+prediction:  ['S']
+expected:  U
+prediction:  ['U']
+expected:  1
+prediction:  ['g']
+expected:  G
+prediction:  ['G']
+expected:  W
+prediction:  ['W']
+expected:  u
+prediction:  ['W']
+expected:  r
+prediction:  ['a']
+expected:  l
+prediction:  ['t']
+expected:  9
+prediction:  ['7']
+expected:  D
+prediction:  ['P']
+expected:  B
+prediction:  ['8']
+expected:  y
+prediction:  ['c']
+expected:  u
+prediction:  ['c']
+expected:  R
+prediction:  ['A']
+expected:  e
+prediction:  ['c']
+expected:  b
+prediction:  ['k']
+expected:  U
+prediction:  ['i']
+expected:  o
+prediction:  ['h']
+expected:  i
+prediction:  ['i']
+expected:  o
+prediction:  ['u']
+expected:  V
+prediction:  ['W']
+expected:  x
+prediction:  ['s']
+expected:  V
+prediction:  ['6']
+expected:  i
+prediction:  ['i']
+expected:  i
+prediction:  ['i']
+expected:  b
+prediction:  ['U']
+expected:  J
+prediction:  ['y']
+expected:  H
+prediction:  ['M']
+expected:  Q
+prediction:  ['O']
+expected:  y
+prediction:  ['k']
+expected:  W
+prediction:  ['W']
+expected:  z
+prediction:  ['g']
+expected:  P
+prediction:  ['P']
+% correct:  0.0

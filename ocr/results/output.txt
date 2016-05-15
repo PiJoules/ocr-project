@@ -1,0 +1,401 @@
+Iteration 1, loss = 2.33739400
+Iteration 2, loss = 2.29823794
+Iteration 3, loss = 2.28331950
+Iteration 4, loss = 2.27149139
+Iteration 5, loss = 2.26196952
+Iteration 6, loss = 2.25421347
+Iteration 7, loss = 2.24924993
+Iteration 8, loss = 2.24014068
+Iteration 9, loss = 2.23163991
+Iteration 10, loss = 2.22632729
+Iteration 11, loss = 2.22187309
+Iteration 12, loss = 2.21409869
+Iteration 13, loss = 2.21002775
+Iteration 14, loss = 2.20367653
+Iteration 15, loss = 2.19849994
+Iteration 16, loss = 2.19400472
+Iteration 17, loss = 2.18636042
+Iteration 18, loss = 2.18136681
+Iteration 19, loss = 2.17498633
+Iteration 20, loss = 2.17055973
+Iteration 21, loss = 2.17051505
+Iteration 22, loss = 2.16338250
+Iteration 23, loss = 2.15555385
+Iteration 24, loss = 2.14904341
+Iteration 25, loss = 2.14372039
+Iteration 26, loss = 2.13401532
+Iteration 27, loss = 2.13297955
+Iteration 28, loss = 2.12636150
+Iteration 29, loss = 2.11992759
+Iteration 30, loss = 2.11253166
+Iteration 31, loss = 2.11018045
+Iteration 32, loss = 2.10166140
+Iteration 33, loss = 2.09718759
+Iteration 34, loss = 2.08935441
+Iteration 35, loss = 2.08446865
+Iteration 36, loss = 2.07944154
+Iteration 37, loss = 2.07133771
+Iteration 38, loss = 2.06392099
+Iteration 39, loss = 2.05769894
+Iteration 40, loss = 2.05403344
+Iteration 41, loss = 2.05047449
+Iteration 42, loss = 2.04354010
+Iteration 43, loss = 2.03585442
+Iteration 44, loss = 2.02781263
+Iteration 45, loss = 2.02344497
+Iteration 46, loss = 2.01620241
+Iteration 47, loss = 2.00736532
+Iteration 48, loss = 2.00802281
+Iteration 49, loss = 1.99206546
+Iteration 50, loss = 1.98849160
+Iteration 51, loss = 1.97890560
+Iteration 52, loss = 1.97855479
+Iteration 53, loss = 1.97127141
+Iteration 54, loss = 1.96040250
+Iteration 55, loss = 1.95374649
+Iteration 56, loss = 1.95085633
+Iteration 57, loss = 1.94115738
+Iteration 58, loss = 1.93241773
+Iteration 59, loss = 1.92532046
+Iteration 60, loss = 1.91880619
+Iteration 61, loss = 1.91237395
+Iteration 62, loss = 1.90289196
+Iteration 63, loss = 1.89814715
+Iteration 64, loss = 1.89336609
+Iteration 65, loss = 1.88526442
+Iteration 66, loss = 1.87454249
+Iteration 67, loss = 1.86654692
+Iteration 68, loss = 1.86050854
+Iteration 69, loss = 1.85909260
+Iteration 70, loss = 1.85294851
+Iteration 71, loss = 1.84285475
+Iteration 72, loss = 1.84013641
+Iteration 73, loss = 1.82551380
+Iteration 74, loss = 1.81477073
+Iteration 75, loss = 1.80955083
+Iteration 76, loss = 1.80565637
+Iteration 77, loss = 1.79789179
+Iteration 78, loss = 1.78383140
+Iteration 79, loss = 1.78098938
+Iteration 80, loss = 1.77647381
+Iteration 81, loss = 1.77002747
+Iteration 82, loss = 1.76183464
+Iteration 83, loss = 1.75082587
+Iteration 84, loss = 1.75174917
+Iteration 85, loss = 1.74146900
+Iteration 86, loss = 1.72951484
+Iteration 87, loss = 1.72247605
+Iteration 88, loss = 1.72008622
+Iteration 89, loss = 1.70900195
+Iteration 90, loss = 1.70097390
+Iteration 91, loss = 1.69439666
+Iteration 92, loss = 1.69002017
+Iteration 93, loss = 1.67666843
+Iteration 94, loss = 1.67565027
+Iteration 95, loss = 1.66820005
+Iteration 96, loss = 1.66103225
+Iteration 97, loss = 1.65685461
+Iteration 98, loss = 1.64966886
+Iteration 99, loss = 1.64412426
+Iteration 100, loss = 1.64037176
+Iteration 101, loss = 1.63461855
+Iteration 102, loss = 1.62164892
+Iteration 103, loss = 1.61470833
+Iteration 104, loss = 1.61473573
+Iteration 105, loss = 1.60072335
+Iteration 106, loss = 1.59774950
+Iteration 107, loss = 1.58609257
+Iteration 108, loss = 1.58043316
+Iteration 109, loss = 1.57363282
+Iteration 110, loss = 1.56207743
+Iteration 111, loss = 1.56020047
+Iteration 112, loss = 1.56200450
+Iteration 113, loss = 1.55429984
+Iteration 114, loss = 1.54206838
+Iteration 115, loss = 1.53462832
+Iteration 116, loss = 1.52875016
+Iteration 117, loss = 1.52389840
+Iteration 118, loss = 1.51850036
+Iteration 119, loss = 1.50987603
+Iteration 120, loss = 1.50603280
+Iteration 121, loss = 1.49610009
+Iteration 122, loss = 1.49545838
+Iteration 123, loss = 1.49668484
+Iteration 124, loss = 1.48349314
+Iteration 125, loss = 1.47911488
+Iteration 126, loss = 1.46977357
+Iteration 127, loss = 1.46120469
+Iteration 128, loss = 1.45831807
+Iteration 129, loss = 1.45508482
+Iteration 130, loss = 1.44351150
+Iteration 131, loss = 1.44616012
+Iteration 132, loss = 1.43584353
+Iteration 133, loss = 1.43758007
+Iteration 134, loss = 1.42936382
+Iteration 135, loss = 1.41827097
+Iteration 136, loss = 1.41173651
+Iteration 137, loss = 1.40443605
+Iteration 138, loss = 1.40491480
+Iteration 139, loss = 1.39502347
+Iteration 140, loss = 1.39146476
+Iteration 141, loss = 1.38274639
+Iteration 142, loss = 1.37793178
+Iteration 143, loss = 1.38056246
+Iteration 144, loss = 1.37261028
+Iteration 145, loss = 1.36179808
+Iteration 146, loss = 1.36378736
+Iteration 147, loss = 1.35641620
+Iteration 148, loss = 1.35061164
+Iteration 149, loss = 1.34250634
+Iteration 150, loss = 1.34025052
+Iteration 151, loss = 1.33079409
+Iteration 152, loss = 1.31965030
+Iteration 153, loss = 1.32348584
+Iteration 154, loss = 1.32270000
+Iteration 155, loss = 1.31542569
+Iteration 156, loss = 1.31209290
+Iteration 157, loss = 1.30742536
+Iteration 158, loss = 1.29096833
+Iteration 159, loss = 1.29048413
+Iteration 160, loss = 1.28792132
+Iteration 161, loss = 1.27378950
+Iteration 162, loss = 1.27335393
+Iteration 163, loss = 1.26732303
+Iteration 164, loss = 1.26449840
+Iteration 165, loss = 1.25651875
+Iteration 166, loss = 1.25747848
+Iteration 167, loss = 1.25349726
+Iteration 168, loss = 1.24484968
+Iteration 169, loss = 1.24147700
+Iteration 170, loss = 1.23468072
+Iteration 171, loss = 1.23174596
+Iteration 172, loss = 1.22497494
+Iteration 173, loss = 1.22379983
+Iteration 174, loss = 1.21492750
+Iteration 175, loss = 1.20950671
+Iteration 176, loss = 1.20323064
+Iteration 177, loss = 1.19885099
+Iteration 178, loss = 1.19525071
+Iteration 179, loss = 1.18953809
+Iteration 180, loss = 1.18661703
+Iteration 181, loss = 1.17964788
+Iteration 182, loss = 1.18210767
+Iteration 183, loss = 1.17604352
+Iteration 184, loss = 1.16724025
+Iteration 185, loss = 1.16303670
+Iteration 186, loss = 1.16465699
+Iteration 187, loss = 1.16102479
+Iteration 188, loss = 1.14851146
+Iteration 189, loss = 1.15068326
+Iteration 190, loss = 1.14667119
+Iteration 191, loss = 1.14034039
+Iteration 192, loss = 1.13432126
+Iteration 193, loss = 1.13114228
+Iteration 194, loss = 1.12736608
+Iteration 195, loss = 1.13039804
+Iteration 196, loss = 1.11993513
+Iteration 197, loss = 1.10771806
+Iteration 198, loss = 1.10815889
+Iteration 199, loss = 1.10062872
+Iteration 200, loss = 1.09782895
+expected:  9
+prediction:  [9]
+expected:  0
+prediction:  [0]
+expected:  6
+prediction:  [6]
+expected:  3
+prediction:  [4]
+expected:  8
+prediction:  [8]
+expected:  7
+prediction:  [7]
+expected:  1
+prediction:  [7]
+expected:  3
+prediction:  [5]
+expected:  7
+prediction:  [7]
+expected:  3
+prediction:  [3]
+expected:  9
+prediction:  [7]
+expected:  4
+prediction:  [8]
+expected:  5
+prediction:  [1]
+expected:  6
+prediction:  [6]
+expected:  9
+prediction:  [9]
+expected:  5
+prediction:  [5]
+expected:  9
+prediction:  [9]
+expected:  2
+prediction:  [2]
+expected:  4
+prediction:  [4]
+expected:  4
+prediction:  [2]
+expected:  5
+prediction:  [5]
+expected:  0
+prediction:  [0]
+expected:  5
+prediction:  [5]
+expected:  3
+prediction:  [3]
+expected:  5
+prediction:  [4]
+expected:  8
+prediction:  [8]
+expected:  3
+prediction:  [3]
+expected:  7
+prediction:  [1]
+expected:  7
+prediction:  [7]
+expected:  5
+prediction:  [5]
+expected:  8
+prediction:  [8]
+expected:  6
+prediction:  [6]
+expected:  3
+prediction:  [3]
+expected:  0
+prediction:  [0]
+expected:  5
+prediction:  [5]
+expected:  6
+prediction:  [6]
+expected:  4
+prediction:  [8]
+expected:  7
+prediction:  [7]
+expected:  6
+prediction:  [6]
+expected:  7
+prediction:  [7]
+expected:  4
+prediction:  [4]
+expected:  1
+prediction:  [1]
+expected:  5
+prediction:  [1]
+expected:  3
+prediction:  [3]
+expected:  6
+prediction:  [4]
+expected:  8
+prediction:  [8]
+expected:  8
+prediction:  [7]
+expected:  7
+prediction:  [7]
+expected:  6
+prediction:  [6]
+expected:  0
+prediction:  [0]
+expected:  0
+prediction:  [0]
+expected:  9
+prediction:  [9]
+expected:  2
+prediction:  [0]
+expected:  4
+prediction:  [4]
+expected:  8
+prediction:  [4]
+expected:  4
+prediction:  [8]
+expected:  4
+prediction:  [4]
+expected:  7
+prediction:  [7]
+expected:  7
+prediction:  [7]
+expected:  0
+prediction:  [1]
+expected:  9
+prediction:  [8]
+expected:  3
+prediction:  [8]
+expected:  1
+prediction:  [1]
+expected:  9
+prediction:  [5]
+expected:  6
+prediction:  [6]
+expected:  2
+prediction:  [2]
+expected:  1
+prediction:  [5]
+expected:  7
+prediction:  [7]
+expected:  3
+prediction:  [3]
+expected:  7
+prediction:  [7]
+expected:  6
+prediction:  [2]
+expected:  9
+prediction:  [9]
+expected:  2
+prediction:  [9]
+expected:  5
+prediction:  [5]
+expected:  8
+prediction:  [7]
+expected:  6
+prediction:  [6]
+expected:  0
+prediction:  [0]
+expected:  3
+prediction:  [3]
+expected:  0
+prediction:  [0]
+expected:  5
+prediction:  [5]
+expected:  3
+prediction:  [0]
+expected:  1
+prediction:  [1]
+expected:  5
+prediction:  [5]
+expected:  1
+prediction:  [1]
+expected:  0
+prediction:  [0]
+expected:  1
+prediction:  [7]
+expected:  2
+prediction:  [2]
+expected:  7
+prediction:  [5]
+expected:  0
+prediction:  [0]
+expected:  1
+prediction:  [1]
+expected:  2
+prediction:  [4]
+expected:  1
+prediction:  [1]
+expected:  1
+prediction:  [1]
+expected:  1
+prediction:  [1]
+expected:  8
+prediction:  [8]
+expected:  5
+prediction:  [5]
+expected:  9
+prediction:  [9]
+expected:  8
+prediction:  [8]
+expected:  7
+prediction:  [0]
+expected:  0
+prediction:  [9]
+% correct:  70.0
