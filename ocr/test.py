@@ -114,9 +114,10 @@ def get_args():
 def main():
     args = get_args()
 
-    #hls = (400, 100)
+    hls = (250, 75)
+    #hls = (250, 75)  # 49.9%
     #hls = (100, 25)  # 94% on digits
-    hls = (40, 20)
+    #hls = (40, 20)
 
     if args.test_data == "digits":
         X, y = load_digits()
@@ -125,7 +126,7 @@ def main():
 
     clf = MLPClassifier(hidden_layer_sizes=hls, verbose=True,
                         activation="tanh", max_iter=1000, algorithm="sgd",
-                        learning_rate_init=0.01)
+                        learning_rate_init=0.01, random_state=1)
     clf.fit(X, y)
 
     if args.test_data == "digits":
