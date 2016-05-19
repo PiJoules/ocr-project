@@ -5,6 +5,7 @@ import string
 import time
 from sklearn.neural_network import MLPClassifier
 from random import randint
+from cropimage import trimmed_image, pad_and_resize
 
 ALPHA_NUMERIC = string.digits + string.ascii_uppercase + string.ascii_lowercase
 
@@ -24,7 +25,9 @@ def imgfile_to_grayscale(filename):
 def imgfile_to_grayscale2(filename, resize=20):
     assert os.path.isfile(filename)
     img = cv2.imread(filename, 0)
-    img = cv2.resize(img, (resize, resize))
+    #img = cv2.resize(img, (resize, resize))
+    trimmed = trimmed_image(img)
+    img = pad_and_resize(trimmed, resize, resize)
     return img
 
 
@@ -114,9 +117,9 @@ def get_args():
 def main():
     args = get_args()
 
-    hls = (250, 75)
+    #hls = (250, 75)
     #hls = (250, 75)  # 49.9%
-    #hls = (100, 25)  # 94% on digits
+    hls = (100, 25)  # 94% on digits
     #hls = (40, 20)
 
     if args.test_data == "digits":
@@ -133,6 +136,22 @@ def main():
         test_digits(X, y, clf)
     else:
         test_chars(X, y, clf)
+
+    return 0
+
+
+def main2():
+    from classify import Classifier
+
+    save_file = "test.p"
+    X, y = load_digits()
+    x = Classifier()
+    x.train(X, y)
+    test_digits(X, y, x.mlp)
+
+    x.save(save_file)
+    x = Classifier.from_pickle(save_file)
+    test_digits(X, y, x.mlp)
 
     return 0
 

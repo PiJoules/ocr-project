@@ -1,8 +1,10 @@
 import cv2
 import numpy as np
 
+from ocr.classify import Classifier
 
-def trim_image(img, white_bg=True, thresh=255):
+
+def trim_image(img, white_bg=True, thresh=240):
     """img is 2D rectangular grayscale image"""
     if not white_bg:
         thresh = 255 - thresh
@@ -47,21 +49,22 @@ def pad_and_resize(img, h, w, bg=255):
         cols_des = int(img.shape[0] / ar_des)
         # Arbitrarily padding more on right than left
         padded = np.lib.pad(img, ((0, 0), (cols_des / 2, (cols_des + 1) / 2)),
-                            'constant', constant_values=((bg, bg), (bg, bg)))
+                            'constant',
+                            constant_values=np.array([(bg, bg), (bg, bg)]))
     else:
         # Too wide, adjust rows keeping # of cols fixed
         rows_des = int(img.shape[1] * ar_des)
         # Arbitrarily padding more on bottom than top
         padded = np.lib.pad(img, ((rows_des / 2, (rows_des + 1) / 2), (0, 0)),
-                            'constant', constant_values=((bg, bg), (bg, bg)))
+                            'constant', constant_values=np.array([(bg, bg), (bg, bg)]))
 
     # Resize
     return cv2.resize(padded, (h, w))
 
 
 if __name__ == "__main__":
-    img = cv2.imread("j.jpg", 0)
-    trimmed = trimmed_image(img, thresh=240)
+    img = cv2.imread("English/Hnd/Img/Sample001/img001-001.png", 0)
+    trimmed = trimmed_image(img)
     print trimmed.shape
     resized = pad_and_resize(trimmed, 30, 30)
     print resized.shape

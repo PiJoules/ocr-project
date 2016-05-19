@@ -10,7 +10,7 @@ def long_description():
 
 
 def packages():
-    return find_packages(include=["{project_name}*"])
+    return find_packages(include=["ocr*"])
 
 
 def install_requires():
@@ -19,7 +19,7 @@ def install_requires():
 
 
 setup(
-    name="{project_name}",
+    name="ocr",
     version="0.0.1",
     description="{description}",
     long_description=long_description(),
@@ -33,7 +33,7 @@ setup(
     keywords="{keywords}",
     packages=packages(),
     install_requires=install_requires(),
-    test_suite="nose.collector",
+    test_suite="tests",
     entry_points={
         "console_scripts": [
         ]
