@@ -3,6 +3,7 @@ import cv2
 import os
 import string
 import time
+import errno
 from sklearn.neural_network import MLPClassifier
 from random import randint
 from cropimage import trimmed_image, pad_and_resize
@@ -22,12 +23,13 @@ def imgfile_to_grayscale(filename):
     return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 
-def imgfile_to_grayscale2(filename, resize=20):
+def imgfile_to_grayscale2(filename, resize=None):
     assert os.path.isfile(filename)
     img = cv2.imread(filename, 0)
-    #img = cv2.resize(img, (resize, resize))
-    trimmed = trimmed_image(img)
-    img = pad_and_resize(trimmed, resize, resize)
+    if resize:
+        img = cv2.resize(img, (resize, resize))
+    #trimmed = trimmed_image(img)
+    #img = pad_and_resize(trimmed, resize, resize)
     return img
 
 
@@ -81,7 +83,7 @@ def load_english_hand(samples=55, base_dir="English/Hnd/Img", resize=30):
     start = time.time()
     X = [None] * 3410
     y = [c for c in ALPHA_NUMERIC for x in xrange(samples)]
-    with open("English/Hnd/Img/all.txt~", "r") as samples:
+    with open(os.path.join(base_dir, "all.txt~"), "r") as samples:
         for i, sample in enumerate(samples):
             sample = sample.strip()
             x = imgfile_to_grayscale2(os.path.join(base_dir, sample), resize=resize)
@@ -91,10 +93,30 @@ def load_english_hand(samples=55, base_dir="English/Hnd/Img", resize=30):
     return X, y
 
 
+def load_shrinked_imgs(dirname, dim=20, samples=1):
+    X = [None] * samples * 62
+    y = [c for c in ALPHA_NUMERIC for x in xrange(samples)]
+    i = 0
+    for sample in os.listdir(dirname):
+        if not sample.startswith("Sample"):
+            continue
+        dirpath = os.path.join(dirname, sample)
+        for j, imgname in enumerate(os.listdir(dirpath)):
+            if j >= samples:
+                break
+            filepath = os.path.join(dirpath, imgname)
+            x = imgfile_to_grayscale2(filepath)
+            X[i] = np.array(np.reshape(x, (dim**2, )))
+            print "Loaded:", filepath, " as", y[i]
+            i += 1
+    return X, y
+
+
 def test_chars(X, y, clf):
     correct = 0
+    assert len(X) == len(y)
     for i in xrange(len(X)):
-        expected = ALPHA_NUMERIC[i / 55]
+        expected = ALPHA_NUMERIC[i / (len(X) / len(ALPHA_NUMERIC))]
         print "expected: ", expected
         assert expected == y[i]
         prediction = clf.predict([X[i]])[0]
@@ -108,7 +130,7 @@ def get_args():
     from argparse import ArgumentParser
     parser = ArgumentParser()
 
-    parser.add_argument("test_data", choices=("digits", "english"),
+    parser.add_argument("test_data", choices=("digits", "english", "shrinked"),
                         help="Test data to use.")
 
     return parser.parse_args()
@@ -117,13 +139,15 @@ def get_args():
 def main():
     args = get_args()
 
-    #hls = (250, 75)
+    hls = (400, 100)
     #hls = (250, 75)  # 49.9%
-    hls = (100, 25)  # 94% on digits
+    #hls = (100, 25)  # 94% on digits
     #hls = (40, 20)
 
     if args.test_data == "digits":
         X, y = load_digits()
+    elif args.test_data == "shrinked":
+        X, y = load_shrinked_imgs("shrinked20", samples=1)
     else:
         X, y = load_english_hand()
 
@@ -156,6 +180,35 @@ def main2():
     return 0
 
 
+def mkdir(dirname):
+    try:
+        os.makedirs(dirname)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise RuntimeError(e)
+
+
+def save_imgs(resize=20, out_dir="shrinked", base_dir="English/Hnd/Img",
+              overwrite=False):
+    out_dir += str(resize)
+    with open(os.path.join(base_dir, "all.txt~"), "r") as samples:
+        for i, sample in enumerate(samples):
+            sample = sample.strip()
+            sample_file = os.path.join(base_dir, sample)
+            sample_dir, sample_img = sample.split("/")
+            mkdir(os.path.join(out_dir, sample_dir))
+            save_file = os.path.join(out_dir, sample_dir, sample_img)
+
+            if os.path.isfile(save_file) and not overwrite:
+                continue
+            x = imgfile_to_grayscale2(sample_file, resize=resize)
+
+            cv2.imwrite(save_file, x)
+
+            print "Shrunk", i, "to", save_file
+
+
 if __name__ == "__main__":
     main()
+    #save_imgs()
 
