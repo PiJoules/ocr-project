@@ -1,11 +1,20 @@
 import cv2
 import numpy as np
 
+"""
+Crop and resize a grayscale image.
+"""
+
 from ocr.classify import Classifier
 
 
 def trim_image(img, white_bg=True, thresh=240):
-    """img is 2D rectangular grayscale image"""
+    """
+    Trim edges of image.
+
+    Args:
+        img (numpy.array): 2D rectangular grayscale image
+    """
     if not white_bg:
         thresh = 255 - thresh
 
@@ -41,6 +50,7 @@ def trimmed_image(img, **kwargs):
 
 
 def pad_and_resize(img, h, w, bg=255):
+    """Resize the image, attempting to keep constant aspect ratio."""
     # Pad
     ar_img = 1.0*img.shape[0]/img.shape[1]
     ar_des = 1.0*h/w
@@ -62,11 +72,34 @@ def pad_and_resize(img, h, w, bg=255):
     return cv2.resize(padded, (h, w))
 
 
-if __name__ == "__main__":
-    img = cv2.imread("English/Hnd/Img/Sample001/img001-001.png", 0)
+def get_args():
+    """Parse cmd line args."""
+    from argparse import ArgumentParser
+    parser = ArgumentParser("Trim, pad, and resize image.")
+
+    parser.add_argument("imgfile", help="Image file to shrink and pad.")
+    parser.add_argument("-o", "--output", required=True,
+                        help="Output filename.")
+    parser.add_argument("-w", "--width", type=int, default=20,
+                        help="Desired width.")
+    parser.add_argument("-h", "--height", type=int, default=20,
+                        help="Desired height.")
+
+    return parser.parse_args()
+
+
+def main():
+    """Entry point."""
+    args = get_args()
+
+    img = cv2.imread(args.imgfile, 0)
     trimmed = trimmed_image(img)
-    print trimmed.shape
-    resized = pad_and_resize(trimmed, 30, 30)
-    print resized.shape
-    cv2.imwrite("jtrimmed.png", trimmed)
-    cv2.imwrite("jresized.png", resized)
+    resized = pad_and_resize(trimmed, args.width, args.height)
+    cv2.imwrite(args.output, resized)
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()
+

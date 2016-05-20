@@ -35,10 +35,6 @@ class TestDigits(unittest.TestCase):
         clf.train(cls.__X, cls.__y)
         cls.__clf = clf
 
-    def test_classify(self):
-        """Test results"""
-        self.__test_digits(self.__X, self.__y, self.__clf)
-
     def test_save(self):
         """Test save"""
         results = self.__test_digits(self.__X, self.__y, self.__clf)
