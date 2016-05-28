@@ -7,8 +7,6 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-from PIL import Image
-
 
 def showimg(img):
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
@@ -131,7 +129,9 @@ def get_args():
     parser.add_argument("filename")
     parser.add_argument("-s", "--save", action="store_true", default=False)
     parser.add_argument("-l", "--labels", type=split_labels, default=[])
-    parser.add_argument("--min_dist", type=int, default=10)
+    parser.add_argument("--min_line_dist", type=int, default=10)
+    parser.add_argument("--min_char_dist", type=int, default=10)
+    parser.add_argument("--char_eps", type=int, default=0)
     parser.add_argument("--thresh", type=int)
 
     return parser.parse_args()
@@ -148,7 +148,7 @@ def main():
     h2, w2 = img.shape[:2]
     print("resized image shape:", img.shape)
     ravel = img.ravel()
-    fig1 = plt.figure(1)
+    fig1 = plt.figure()
     plt.hist(ravel, 256, [0, 256])
     avg = np.mean(ravel)
     std = np.std(ravel)
@@ -168,7 +168,7 @@ def main():
     text_pixels = colored_pixels(img, thresh)
 
 
-    fig2 = plt.figure(2)
+    fig2 = plt.figure()
     plt.imshow(img, cmap='gray')
     xs, ys = zip(*text_pixels)
     assert len(xs) == len(ys)
@@ -176,14 +176,15 @@ def main():
     assert max(ys) <= h2
 
     # Draw line boundaries
-    line_positions = line_regions(ys, h2, min_dist=args.min_dist)
+    line_positions = line_regions(ys, h2, min_dist=args.min_line_dist)
     for pos in line_positions:
         plt.plot([0, w2], [pos[0], pos[0]], color="b")
         plt.plot([0, w2], [pos[1], pos[1]], color="b")
 
     # Draw character boundaries
-    char_regions = character_regions(img, line_positions, thresh, epsilon=3,
-                                     min_dist=args.min_dist)
+    char_regions = character_regions(
+        img, line_positions, thresh, epsilon=args.char_eps,
+        min_dist=args.min_char_dist)
     assert len(char_regions) == len(line_positions)
     for i, char_region in enumerate(char_regions):
         starty, endy = line_positions[i]
