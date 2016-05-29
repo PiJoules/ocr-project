@@ -8,13 +8,21 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+import string
 
 from sklearn.neighbors import NearestNeighbors
 from cropimage import trimmed_image, pad_and_resize
 from datetime import datetime
 
+ALPHA_NUMERIC = string.digits + string.ascii_uppercase + string.ascii_lowercase
 
-def grayscale_to_black_and_white(img, thresh):
+
+def grayscale_to_black_and_white(img, thresh=None):
+    if thresh is None:
+        ravel = img.ravel()
+        avg = np.mean(ravel)
+        std = np.std(ravel)
+        thresh = max(0, avg - 2*std)
     return np.array([[0 if pix <= thresh else 255 for pix in row] for row in img]).astype(np.uint8)
 
 
@@ -25,8 +33,6 @@ def resize(img, width, height, thresh):
 
 
 def img_to_feature(img):
-    #img = resize(img, width, height, thresh)
-    #img = grayscale_to_black_and_white(img, thresh)
     return np.reshape(img, (img.shape[0] * img.shape[1], ))
 
 
@@ -53,34 +59,6 @@ def split_data(X, y, retain, classes):
         test_y += y[split_idx:end_idx]
     return (np.array(train_X), np.array(train_y), np.array(test_X),
             np.array(test_y))
-
-
-def load_data(args):
-    train = []
-    labels = []
-    for dirname in os.listdir(args.trainingdir):
-        label = dirname[0]
-        full_dirname = os.path.join(args.trainingdir, dirname)
-        vector = []
-        for filename in os.listdir(full_dirname):
-            sample = os.path.join(full_dirname, filename)
-            img = cv2.imread(sample, 0)
-            if args.thresh is None:
-                ravel = img.ravel()
-                avg = np.mean(ravel)
-                #std = np.std(ravel)
-                #thresh = avg - 2*std
-                thresh = avg
-            else:
-                thresh = args.thresh
-            grayscale = grayscale_to_black_and_white(img, thresh)
-            resized = resize(grayscale, args.width, args.height, thresh)
-            #feature = img_to_feature(img, args.width, args.height, thresh)
-            feature = img_to_feature(resized)
-            train.append(feature)
-            labels.append(label)
-
-    return split_data(train, labels, args.retain, 62)
 
 
 def dict_from_data(data, labels):
@@ -124,16 +102,63 @@ class Classifier(object):
         print(correct * 100.0 / len(expected))
 
 
+def load_data(args):
+    train = []
+    labels = []
+    for dirname in os.listdir(args.trainingdir):
+        label = dirname[0]
+        full_dirname = os.path.join(args.trainingdir, dirname)
+        vector = []
+        for filename in os.listdir(full_dirname):
+            sample = os.path.join(full_dirname, filename)
+            img = cv2.imread(sample, 0)
+            if args.thresh is None:
+                ravel = img.ravel()
+                avg = np.mean(ravel)
+                #std = np.std(ravel)
+                #thresh = avg - 2*std
+                thresh = avg
+            else:
+                thresh = args.thresh
+            grayscale = grayscale_to_black_and_white(img, thresh)
+            resized = resize(grayscale, args.width, args.height, thresh)
+            #feature = img_to_feature(img, args.width, args.height, thresh)
+            feature = img_to_feature(resized)
+            train.append(feature)
+            labels.append(label)
+
+    return split_data(train, labels, args.retain, 62)
+
+
+def load_English(root, width, height, samples, classes=62, digits=3,
+                 digits2=5, thresh=128, retain=0.8):
+    data = []
+    labels = []
+    for i in xrange(1, classes + 1):
+        dirname = os.path.join(root, "Sample" + str(i).zfill(digits))
+        for j in xrange(1, samples + 1):
+            filename = os.path.join(
+                dirname,
+                "img{}-{}.png".format(str(i).zfill(digits), str(j).zfill(digits2)))
+            img = cv2.imread(filename, 0)
+            resized = resize(img, width, height, thresh)
+            feature = img_to_feature(resized)
+            data.append(feature)
+            labels.append(ALPHA_NUMERIC[i-1])
+    return split_data(data, labels, retain, classes)
+
+
 def get_args():
     from argparse import ArgumentParser
     parser = ArgumentParser()
 
-    parser.add_argument("trainingdir")
+    parser.add_argument("trainingdir", choices=("characters", "English"))
     parser.add_argument("-k", "--knearest", type=int, default=5)
     parser.add_argument("--thresh", type=int)
     parser.add_argument("--width", type=int, default=20)
     parser.add_argument("--height", type=int, default=20)
     parser.add_argument("-r", "--retain", type=float, default=0.8)
+    parser.add_argument("--samples", type=int, default=5)
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-s", "--save", nargs="?",
@@ -146,7 +171,13 @@ def get_args():
 def main():
     args = get_args()
 
-    train, train_labels, test, test_labels = load_data(args)
+    if args.trainingdir == "characters":
+        train, train_labels, test, test_labels = load_data(args)
+    else:
+        train, train_labels, test, test_labels = load_English(
+            args.trainingdir, args.width, args.height, args.samples,
+            retain=args.retain)
+
     if args.pickle:
         nbrs = Classifier.from_file(args.pickle)
     else:

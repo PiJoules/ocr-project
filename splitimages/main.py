@@ -10,6 +10,7 @@ import numpy as np
 from knn import (Classifier, img_to_feature, grayscale_to_black_and_white,
                  resize, transform)
 from collections import defaultdict
+from correct import correct
 
 
 def showimg(img):
@@ -36,21 +37,24 @@ def line_regions(ys, height, epsilon=0, min_dist=0, thresh=None):
         counts[y] += 1
     for y in xrange(height):
         if start is None and counts[y] > thresh:
+            # Filled line
             start = last
         elif start is not None and counts[y] <= thresh:
+            # Empty line
             lines.append([start, y])
             start = None
         last = y
 
     # Join any tuples that are close together
-    lines_joined = [lines.pop(0)]
-    while lines:
-        next_line = lines.pop(0)
-        last_line = lines_joined[-1]
-        if next_line[0] - last_line[1] <= epsilon:
-            lines_joined[-1][1] = next_line[1]
-        else:
-            lines_joined.append(next_line)
+    #lines_joined = [lines.pop(0)]
+    #while lines:
+    #    next_line = lines.pop(0)
+    #    last_line = lines_joined[-1]
+    #    if next_line[0] - last_line[1] <= epsilon:
+    #        lines_joined[-1][1] = next_line[1]
+    #    else:
+    #        lines_joined.append(next_line)
+    lines_joined = lines
 
     # Filter out any regions that are less than min_dist
     lines_joined = [x for x in lines_joined if x[1] - x[0] >= min_dist]
@@ -71,7 +75,8 @@ def colored_pixels(img, thresh):
     return pixels
 
 
-def character_regions(img, regions, thresh, epsilon=5, min_dist=10):
+def character_regions(img, regions, thresh, epsilon=5, min_dist=0,
+                      dark_thresh=0):
     """Split the line regions into characters."""
     lines = []
 
@@ -82,7 +87,7 @@ def character_regions(img, regions, thresh, epsilon=5, min_dist=10):
         pixels = colored_pixels(sub_img, thresh)
         xs, ys = zip(*pixels)
         char_regions = line_regions(xs, w, epsilon=epsilon, min_dist=min_dist,
-                                    thresh=1)
+                                    thresh=dark_thresh)
         lines.append(char_regions)
 
     return lines
@@ -105,11 +110,28 @@ def show_img(img):
     plt.close(fig)
 
 
+def img_thresh(img):
+    ravel = img.ravel()
+    avg = np.mean(ravel)
+    std = np.std(ravel)
+    thresh = max(0, avg - 2*std)
+    return thresh
+
+
 def identify_chars(img, line_regs, char_regs, classifier, k=5, width=20,
                    height=20, thresh=None, verbose=False):
     """Differentiate between characters and spaces based on the regions."""
-    flat = [char_reg for line_reg in char_regs for char_reg in line_reg]
-    avg_char_dist = sum(x[1] - x[0] for x in flat) * 1.0 / len(flat)
+    #flat = [char_reg for line_reg in char_regs for char_reg in line_reg]
+    #avg_char_dist = sum(x[1] - x[0] for x in flat) * 1.0 / len(flat)
+    avg_char_dist = []
+    for i in xrange(len(char_regs)):
+        last_end = char_regs[i][0][1]
+        for j in xrange(1, len(char_regs[i])):
+            start, end = char_regs[i][j]
+            avg_char_dist.append(start - last_end)
+            last_end = end
+    avg_char_dist = sum(avg_char_dist) * 1.0 / len(avg_char_dist)
+
     print("avg char dist:", avg_char_dist)
 
     chars = []
@@ -132,13 +154,15 @@ def identify_chars(img, line_regs, char_regs, classifier, k=5, width=20,
                 print("avg:", avg)
                 print("std:", std)
                 print("thresh:", thresh)
-                x = grayscale_to_black_and_white(sub_img, thresh=thresh)
-                y = resize(x, width, height, thresh=thresh)
-                pixels = colored_pixels(y, thresh)
-                xs, ys = zip(*pixels)
+                x = grayscale_to_black_and_white(sub_img, thresh)
+                y = resize(x, width, height, thresh)
+                z = grayscale_to_black_and_white(y)
                 show_img(sub_img)
                 show_img(x)
                 show_img(y)
+                show_img(z)
+                pixels = colored_pixels(z, img_thresh(z))
+                xs, ys = zip(*pixels)
 
                 fig = plt.figure()
                 plt.imshow(y, cmap="gray")
@@ -200,8 +224,8 @@ def get_args():
     parser.add_argument("filename")
     parser.add_argument("-s", "--save", action="store_true", default=False)
     parser.add_argument("-l", "--labels", type=split_labels, default=[])
-    parser.add_argument("--min_line_dist", type=int, default=10)
-    parser.add_argument("--min_char_dist", type=int, default=10)
+    parser.add_argument("--min_line_dist", type=int, default=0)
+    parser.add_argument("--min_char_dist", type=int, default=0)
     parser.add_argument("--width", type=int, default=20)
     parser.add_argument("--height", type=int, default=20)
     parser.add_argument("--char_eps", type=int, default=0)
@@ -209,6 +233,7 @@ def get_args():
     parser.add_argument("-p", "--pickle")
     parser.add_argument("-k", "--knearest", type=int, default=5)
     parser.add_argument("-v", "--verbose", action="count", default=0)
+    parser.add_argument("--resize", type=float, default=0.25)
 
     return parser.parse_args()
 
@@ -217,7 +242,7 @@ def main():
     args = get_args()
 
     # Get background color
-    resize_ratio = 0.25
+    resize_ratio = args.resize
     img = cv2.imread(args.filename, 0)
     h, w = img.shape[:2]
     img = cv2.resize(img, None, fx=resize_ratio, fy=resize_ratio)
@@ -235,7 +260,8 @@ def main():
     thresh = args.thresh
     if thresh is None:
         thresh = avg - 2*std
-    print("background threshgold:", thresh)
+    img = grayscale_to_black_and_white(img, 128)
+    print("background threshold:", thresh)
     fig1.show()
     print(img)
 
@@ -282,6 +308,7 @@ def main():
                               width=args.width, height=args.height,
                               verbose=args.verbose)
         print(text)
+        print(" ".join([correct(x) for x in text.split()]))
     elif args.save:
         save_images(img, line_positions, char_regions, args.labels)
     else:

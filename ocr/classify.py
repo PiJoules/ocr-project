@@ -31,16 +31,7 @@ class Classifier(object):
                 learning_rate_init (float): Initial learning rate. Defaults to
                     0.01.
         """
-        hidden_layer_sizes = kwargs.get("hidden_layer_sizes", (100, 25))
-        activation = kwargs.get("activation", "tanh")
-        max_iter = kwargs.get("max_iter", 1000)
-        algorithm = kwargs.get("algorithm", "sgd")
-        learning_rate_init = kwargs.get("learning_rate_init", 0.01)
-
-        self.__clf = MLPClassifier(
-            hidden_layer_sizes=hidden_layer_sizes, activation=activation,
-            max_iter=max_iter, algorithm=algorithm,
-            learning_rate_init=learning_rate_init, **kwargs)
+        self.__clf = MLPClassifier(**kwargs)
 
     @classmethod
     def from_pickle(cls, filename):
@@ -52,7 +43,7 @@ class Classifier(object):
     def mlp(self):
         return self.__clf
 
-    def train(self, data, labels):
+    def fit(self, data, labels):
         """
         Train the classifier. This must be called before classify, otherwise
         the classifier will throw an error since it cannot classify if it was
@@ -65,7 +56,7 @@ class Classifier(object):
         """
         self.__clf.fit(data, labels)
 
-    def classify(self, imgs):
+    def predict(self, imgs):
         """
         Classify images.
 
