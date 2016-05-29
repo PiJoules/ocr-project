@@ -1,1 +1,2 @@
 ipython
+cython==0.24
