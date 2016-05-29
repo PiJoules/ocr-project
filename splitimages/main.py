@@ -7,6 +7,10 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
+from knn import (Classifier, img_to_feature, grayscale_to_black_and_white,
+                 resize, transform)
+from collections import defaultdict
+
 
 def showimg(img):
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
@@ -15,18 +19,25 @@ def showimg(img):
     cv2.destroyAllWindows()
 
 
-def line_regions(ys, height, epsilon=0, min_dist=0):
+def line_regions(ys, height, epsilon=0, min_dist=0, thresh=None):
     """Get the y positions of lines of text."""
+    assert len(ys) > 0
     lines = []
 
     start = None
-    ys = set(ys)
+    #ys = set(ys)
     last = 0
+    if thresh is None:
+        avg = np.mean(ys)
+        std = np.std(ys)
+        thresh = max(avg - 2*std, 0)
+    counts = defaultdict(int)
+    for y in ys:
+        counts[y] += 1
     for y in xrange(height):
-        if start is None and y in ys:
-            # Found start of line
+        if start is None and counts[y] > thresh:
             start = last
-        elif start is not None and y not in ys:
+        elif start is not None and counts[y] <= thresh:
             lines.append([start, y])
             start = None
         last = y
@@ -45,16 +56,6 @@ def line_regions(ys, height, epsilon=0, min_dist=0):
     lines_joined = [x for x in lines_joined if x[1] - x[0] >= min_dist]
 
     return lines_joined
-
-
-def pixel_is_near_colored(img, px, py, thresh, dist=10):
-    h, w = img.shape[:2]
-    for y in xrange(max(0, py - dist), min(h, py + dist + 1)):
-        for x in xrange(max(0, px - dist), min(w, px + dist + 1)):
-            pix = img[y, x]
-            if pix < thresh:
-                return True
-    return False
 
 
 def colored_pixels(img, thresh):
@@ -80,7 +81,8 @@ def character_regions(img, regions, thresh, epsilon=5, min_dist=10):
         assert w == sub_img.shape[1]
         pixels = colored_pixels(sub_img, thresh)
         xs, ys = zip(*pixels)
-        char_regions = line_regions(xs, w, epsilon=epsilon, min_dist=min_dist)
+        char_regions = line_regions(xs, w, epsilon=epsilon, min_dist=min_dist,
+                                    thresh=1)
         lines.append(char_regions)
 
     return lines
@@ -91,13 +93,82 @@ def imgs_from_regions(img, line_regs, char_regs):
     for i, char_region in enumerate(char_regs):
         starty, endy = line_regs[i]
         for startx, endx in char_region:
-            yield i, img[starty:endy, startx:endx]
+            yield i, img[starty:endy+1, startx:endx+1]
+
+
+def show_img(img):
+    fig = plt.figure()
+    plt.imshow(img, cmap="gray")
+    plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
+    fig.show()
+    raw_input()
+    plt.close(fig)
+
+
+def identify_chars(img, line_regs, char_regs, classifier, k=5, width=20,
+                   height=20, thresh=None, verbose=False):
+    """Differentiate between characters and spaces based on the regions."""
+    flat = [char_reg for line_reg in char_regs for char_reg in line_reg]
+    avg_char_dist = sum(x[1] - x[0] for x in flat) * 1.0 / len(flat)
+    print("avg char dist:", avg_char_dist)
+
+    chars = []
+    count = 0
+    for i, char_region in enumerate(char_regs):
+        starty, endy = line_regs[i]
+        line_chars = []
+        last_end = None
+        print("Checking line", i)
+        for startx, endx in char_region:
+            sub_img = img[starty:endy+1, startx:endx+1]
+
+            print("Transforming region", (startx, starty), (endx, endy))
+            ravel = sub_img.ravel()
+            std = np.std(ravel)
+            avg = np.mean(ravel)
+            thresh = max(0, avg - 2*std)
+            if verbose:
+                print("shape:", sub_img.shape)
+                print("avg:", avg)
+                print("std:", std)
+                print("thresh:", thresh)
+                x = grayscale_to_black_and_white(sub_img, thresh=thresh)
+                y = resize(x, width, height, thresh=thresh)
+                pixels = colored_pixels(y, thresh)
+                xs, ys = zip(*pixels)
+                show_img(sub_img)
+                show_img(x)
+                show_img(y)
+
+                fig = plt.figure()
+                plt.imshow(y, cmap="gray")
+                plt.scatter(xs, ys, marker=".", color="r")
+                fig.show()
+                raw_input()
+                plt.close(fig)
+
+            sub_img = transform(sub_img, width, height, thresh)
+
+            prediction, guesses, _ = classifier.predictions_and_metadata([sub_img], k=k)
+            prediction = prediction[0]
+            if verbose:
+                print(prediction, guesses)
+
+            # Add space
+            if last_end is not None:
+                dist = startx - last_end
+                if dist > avg_char_dist:
+                    chars.append(" ")
+
+            chars.append(prediction)
+            count += 1
+            last_end = endx
+        chars.append("\n")
+    return "".join(chars).strip()
 
 
 def save_images(img, line_regs, char_regs, save_as, dest_dir="characters"):
     assert len(line_regs) == len(save_as) == len(char_regs), "{}, {}, {}".format(len(line_regs), len(save_as), len(char_regs))
-    #for i in xrange(1, len(char_regs)):
-    #    assert len(char_regs[i]) == len(char_regs[0]), "char_regs[{}]: {}, expected: {}".format(i, len(char_regs[i]), len(char_regs[0]))
 
     import os
     import errno
@@ -131,8 +202,13 @@ def get_args():
     parser.add_argument("-l", "--labels", type=split_labels, default=[])
     parser.add_argument("--min_line_dist", type=int, default=10)
     parser.add_argument("--min_char_dist", type=int, default=10)
+    parser.add_argument("--width", type=int, default=20)
+    parser.add_argument("--height", type=int, default=20)
     parser.add_argument("--char_eps", type=int, default=0)
     parser.add_argument("--thresh", type=int)
+    parser.add_argument("-p", "--pickle")
+    parser.add_argument("-k", "--knearest", type=int, default=5)
+    parser.add_argument("-v", "--verbose", action="count", default=0)
 
     return parser.parse_args()
 
@@ -175,8 +251,13 @@ def main():
     assert max(xs) <= w2
     assert max(ys) <= h2
 
+    plt.scatter(xs, ys, marker=".", color="r")
+    plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
+    fig2.show()
+
     # Draw line boundaries
-    line_positions = line_regions(ys, h2, min_dist=args.min_line_dist)
+    line_positions = line_regions(ys, h2, min_dist=args.min_line_dist,
+                                  thresh=0)
     for pos in line_positions:
         plt.plot([0, w2], [pos[0], pos[0]], color="b")
         plt.plot([0, w2], [pos[1], pos[1]], color="b")
@@ -192,11 +273,16 @@ def main():
             plt.plot([startx, startx], [starty, endy], color="b")
             plt.plot([endx, endx], [starty, endy], color="b")
 
-    plt.scatter(xs, ys, marker=".", color="r")
-    plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
-    fig2.show()
 
-    if args.save:
+    if args.pickle:
+        nbrs = Classifier.from_file(args.pickle)
+        print("Running classifier", args.pickle)
+        text = identify_chars(img, line_positions, char_regions, nbrs,
+                              k=args.knearest, thresh=args.thresh,
+                              width=args.width, height=args.height,
+                              verbose=args.verbose)
+        print(text)
+    elif args.save:
         save_images(img, line_positions, char_regions, args.labels)
     else:
         raw_input()  # Keep figures alive
