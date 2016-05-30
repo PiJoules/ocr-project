@@ -58,8 +58,8 @@ $ python setup.py develop  # Create executables
 To make the ocr packageglobally availale on your computer via pip:
 ```sh
 $ python setup.py bdist_wheel  # Create binary distribution
-$ wheel install dist/ocr-{version}-py{2/3}-none-any.whl  # Install created wheel
-$ wheel install-scripts ocr  # Enable package scripts
+$ wheel install dist/ocr_testbed-{version}-py{2/3}-none-any.whl  # Install created wheel
+$ wheel install-scripts ocr-testbed  # Enable package scripts
 ````
 The first command with `develop` essentially does the same as the following
 three commands, but these commands allow for the package to be available

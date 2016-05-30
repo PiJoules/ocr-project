@@ -19,7 +19,7 @@ def install_requires():
 
 
 setup(
-    name="ocr",
+    name="ocr-testbed",
     version="0.0.1",
     description="OCR development and testing.",
     long_description=long_description(),
