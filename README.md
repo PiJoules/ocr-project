@@ -82,6 +82,9 @@ the correct text is extracted. The following are ways to improve performance:
       along each axis as featues.
 - Smarter character region finding in an image.
 
+For now, this package works best as a testbed for experimenting with different
+classifiers and features.
+
 
 ## TODO
 - Continue cleanup of ocr/ dir.
