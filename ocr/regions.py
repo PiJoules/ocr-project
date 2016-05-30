@@ -384,21 +384,56 @@ def get_args():
     from argparse import ArgumentParser
     parser = ArgumentParser()
 
-    parser.add_argument("filename")
-    parser.add_argument("-s", "--save_dir")
-    parser.add_argument("-l", "--labels", type=split_labels, default=[])
-    parser.add_argument("--min_line_dist", type=int, default=0)
-    parser.add_argument("--min_char_dist", type=int, default=0)
-    parser.add_argument("--min_line_pixels", type=int, default=1)
-    parser.add_argument("--min_char_pixels", type=int, default=1)
-    parser.add_argument("--width", type=int, default=20)
-    parser.add_argument("--height", type=int, default=20)
-    parser.add_argument("--thresh", type=int)
-    parser.add_argument("-p", "--pickle")
-    parser.add_argument("-k", "--knearest", type=int, default=5)
-    parser.add_argument("-v", "--verbose", action="count", default=0)
-    parser.add_argument("--resize", type=float, default=0.25)
-    parser.add_argument("-c", "--correct", action="store_true", default=False)
+    parser.add_argument("filename", help="File to extract text from.")
+    parser.add_argument("-s", "--save_dir",
+                        help="Directory to save training data into if the "
+                        "labels are provided.")
+    parser.add_argument("-l", "--labels", type=split_labels, default=[],
+                        help="Labels for each sample, separated by commas.")
+    parser.add_argument("--min_line_dist", type=int, default=0,
+                        help="Minimum distance between each line. Defaults to "
+                        "%(default)d.")
+    parser.add_argument("--min_char_dist", type=int, default=0,
+                        help="Minimum distance between each character. "
+                        "Defaults to %(default)d.")
+    parser.add_argument("--min_line_pixels", type=int, default=1,
+                        help="Minimum number of dark pixels along the height  "
+                        "of an image for that line to be considered as having "
+                        "text. Defaults to %(default)d.")
+    parser.add_argument("--min_char_pixels", type=int, default=1,
+                        help="Minimum number of dark pixels along the width  "
+                        "of a line for that line to be considered as having "
+                        "text. Defaults to %(default)d.")
+    parser.add_argument("--width", type=int, default=20,
+                        help="Width to resize each sample image when running "
+                        "through classifier. Defaults to %(default)d.")
+    parser.add_argument("--height", type=int, default=20,
+                        help="Height to resize each sample image when running "
+                        "through classifier. Defaults to %(default)d.")
+    parser.add_argument("-t", "--thresh", type=int,
+                        help="Background threshold up to which a pixel is "
+                        "considered color. For example, if --thresh is "
+                        "200, then grayscaled pixels with a value of at most "
+                        "200 are considered colored.")
+    parser.add_argument("-p", "--pickle",
+                        help="Pickle file containing a saved classifier to "
+                        "use to classify text in the image.")
+    parser.add_argument("-k", "--knearest", type=int, default=5,
+                        help="When using a knn classifier, this is the number "
+                        "of neighbors to check. "
+                        "Defaults to %(default)d.")
+    parser.add_argument("-v", "--verbose", action="count", default=0,
+                        help="Logging verbosity. More verbose means more "
+                        "logging info.")
+    parser.add_argument("--resize", type=float, default=1,
+                        help="Base image resize ratio. If the given image is "
+                        "too big, resizing the image to a smaller aspect "
+                        "ratio will make this program run faster. "
+                        "Defaults to %(default)0.1f.")
+    parser.add_argument("--spell_check", action="store_true", default=False,
+                        help="Try to improve extracted text by spell checking "
+                        "each word. "
+                        "Defaults to %(default)r.")
 
     args = parser.parse_args()
 
@@ -429,7 +464,7 @@ def main():
         LOGGER.info("Running classifier {}".format(args.pickle))
         resize = (args.width, args.height)
         text = get_text(img, clf, resize=resize, k=args.knearest,
-                        bg_thresh=args.thresh, spell_check=args.correct,
+                        bg_thresh=args.thresh, spell_check=args.spell_check,
                         min_char_dist=args.min_char_dist,
                         min_line_dist=args.min_line_dist,
                         min_char_pixels=args.min_char_pixels,
@@ -454,9 +489,8 @@ def main():
         LOGGER.info("background threshold: {}".format(thresh))
         fig1.show()
 
-        # Find top left corner
+        # Find colored pixels
         text_pixels = colored_pixels(img, thresh)
-
         fig2 = plt.figure()
         plt.imshow(img, cmap='gray')
         xs, ys = zip(*text_pixels)
@@ -488,10 +522,16 @@ def main():
                 plt.plot([endx, endx], [starty, endy], color="b")
 
         if args.save_dir:
+            if not args.labels:
+                raise RuntimeError(
+                    "If you are saving the characters as sample/training data, "
+                    "you must provided a comma-separated string of labels to "
+                    "save each sample as.")
             save_images(img, line_positions, char_regions, args.labels,
                         args.save_dir)
         else:
-            raw_input()  # Keep figures alive
+            # Keep figures alive
+            raw_input("Press 'Enter' to close the current images.")
     return 0
 
 
