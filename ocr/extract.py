@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import logging
 
-from knn import Classifier, grayscale_to_black_and_white, transform
+from ocr.knn import Classifier, grayscale_to_black_and_white, transform
 from collections import defaultdict
 from correct import correct
 

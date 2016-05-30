@@ -21,21 +21,26 @@ def install_requires():
 setup(
     name="ocr",
     version="0.0.1",
-    description="{description}",
+    description="OCR development and testing.",
     long_description=long_description(),
-    url="{url}",
-    author="{author}",
-    author_email="{author_email}",
-    license="{license}",
+    url="https://github.com/PiJoules/ocr-project",
+    author="Leonard Chan",
+    author_email="lchan1994@yahoo.com",
+    license="Unlicense",
     classifiers=[
         "Development Status :: 3 - Alpha",
     ],
-    keywords="{keywords}",
+    package_data={
+        "data": ["*"]
+    },
+    keywords="ocr,knn,mlp",
     packages=packages(),
     install_requires=install_requires(),
     test_suite="tests",
     entry_points={
         "console_scripts": [
+            "extract=ocr.extract:main",
+            "knn=ocr.knn:main",
         ]
     }
 )
