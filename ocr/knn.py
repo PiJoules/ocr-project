@@ -1,19 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Create and test a K Nearest Neighbors Classifier.
+"""
+
 from __future__ import print_function
 
+import sys
 import os
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 import string
+import logging
 
 from sklearn.neighbors import NearestNeighbors
 from cropimage import trimmed_image, pad_and_resize
 from datetime import datetime
 
+LOGGER = logging.getLogger(__name__)
 ALPHA_NUMERIC = string.digits + string.ascii_uppercase + string.ascii_lowercase
 
 
@@ -96,18 +103,19 @@ class Classifier(object):
         correct = 0
         for i, x in enumerate(expected):
             pred = predictions[i]
-            print("expected:", x, ", guess:", pred, ", guesses:", all_predictions[i])
+            LOGGER.debug("expected: {}, guess: {}, guesses: {}"
+                         .format(x, pred, all_predictions[i]))
             if x == pred:
                 correct += 1
-        print(correct * 100.0 / len(expected))
+        print(correct * 100.0 / len(expected), "%")
 
 
-def load_data(args):
+def load_handwritten(args):
     train = []
     labels = []
-    for dirname in os.listdir(args.trainingdir):
+    for dirname in os.listdir(args.training_dir):
         label = dirname[0]
-        full_dirname = os.path.join(args.trainingdir, dirname)
+        full_dirname = os.path.join(args.training_dir, dirname)
         vector = []
         for filename in os.listdir(full_dirname):
             sample = os.path.join(full_dirname, filename)
@@ -115,14 +123,11 @@ def load_data(args):
             if args.thresh is None:
                 ravel = img.ravel()
                 avg = np.mean(ravel)
-                #std = np.std(ravel)
-                #thresh = avg - 2*std
                 thresh = avg
             else:
                 thresh = args.thresh
             grayscale = grayscale_to_black_and_white(img, thresh)
             resized = resize(grayscale, args.width, args.height, thresh)
-            #feature = img_to_feature(img, args.width, args.height, thresh)
             feature = img_to_feature(resized)
             train.append(feature)
             labels.append(label)
@@ -130,8 +135,11 @@ def load_data(args):
     return split_data(train, labels, args.retain, 62)
 
 
-def load_English(root, width, height, samples, classes=62, digits=3,
-                 digits2=5, thresh=128, retain=0.8):
+def load_typed(root, width, height, samples, classes=62, digits=3,
+               digits2=5, thresh=128, retain=0.8):
+    """
+    Load typed training data.
+    """
     data = []
     labels = []
     for i in xrange(1, classes + 1):
@@ -152,31 +160,68 @@ def get_args():
     from argparse import ArgumentParser
     parser = ArgumentParser()
 
-    parser.add_argument("trainingdir", choices=("characters", "English"))
-    parser.add_argument("-k", "--knearest", type=int, default=5)
-    parser.add_argument("--thresh", type=int)
-    parser.add_argument("--width", type=int, default=20)
-    parser.add_argument("--height", type=int, default=20)
-    parser.add_argument("-r", "--retain", type=float, default=0.8)
-    parser.add_argument("--samples", type=int, default=5)
+    parser.add_argument("-t", "--training", choices=("handwritten", "typed"),
+                        required=True,
+                        help="Training data type.")
+    parser.add_argument("-d", "--training_dir", required=True,
+                        help="Directory containing training data. The "
+                        "directory structure depends on the training data "
+                        "type.")
+    parser.add_argument("-k", "--knearest", type=int, default=5,
+                        help="Number of neighbors to compare against. "
+                        "Defaults to %(default)d.")
+    parser.add_argument("--thresh", type=int,
+                        help="Background pixel threshold.")
+    parser.add_argument("--width", type=int, default=20,
+                        help="Sample image width. Defaults to %(default)d.")
+    parser.add_argument("--height", type=int, default=20,
+                        help="Sample image height. Defaults to %(default)d.")
+    parser.add_argument("-r", "--retain", type=float, default=0.8,
+                        help="Percentage of sample data to use as training "
+                        "data. The rest will be used as test data. This "
+                        "number is given as a float from 0.0 to 1.0, not a "
+                        "value from 0 to 100. "
+                        "Defaults to %(default)0.1f.")
+    parser.add_argument("--samples", type=int, default=5,
+                        help="Number of samples of each class to use. "
+                        "Defaults to %(default)d.")
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-s", "--save", nargs="?",
-                       const="classifier.{timestamp}.p", default=None)
-    group.add_argument("-p", "--pickle")
+                       const="classifier.{timestamp}.p", default=None,
+                       help="filename to save the classifier as. "
+                       "Defaults to '%(const)s' if the flag is provided where "
+                       "{timestamp} is the current system time.")
+    group.add_argument("-p", "--pickle",
+                       help="Saved classifier to load and test.")
+    parser.add_argument("-v", "--verbose", action="count", default=0,
+                        help="Logging verbosity. More verbose means more "
+                        "logging info.")
 
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    # Set logging verbosity
+    logging.basicConfig(format="[%(asctime)s] %(levelname)s: %(message)s",
+                        stream=sys.stderr)
+    if args.verbose == 1:
+        LOGGER.setLevel(logging.INFO)
+    elif args.verbose == 2:
+        LOGGER.setLevel(logging.DEBUG)
+
+    return args
 
 
 def main():
     args = get_args()
 
-    if args.trainingdir == "characters":
-        train, train_labels, test, test_labels = load_data(args)
-    else:
-        train, train_labels, test, test_labels = load_English(
-            args.trainingdir, args.width, args.height, args.samples,
+    if args.training == "handwritten":
+        train, train_labels, test, test_labels = load_handwritten(args)
+    elif args.training == "typed":
+        train, train_labels, test, test_labels = load_typed(
+            args.training_dir, args.width, args.height, args.samples,
             retain=args.retain)
+    else:
+        raise RuntimeError("Unknown training type: ".format(args.training))
 
     if args.pickle:
         nbrs = Classifier.from_file(args.pickle)
