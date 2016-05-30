@@ -11,7 +11,6 @@ import logging
 
 from ocr.utils import (default_background_threshold,
                        grayscale_to_black_and_white, transform)
-from ocr.classifiers.knn import Classifier
 from collections import defaultdict
 from correct import correct
 
@@ -248,7 +247,7 @@ def get_text_from_regions(img, line_regs, char_regs, classifier, bg_thresh=None,
 
             if resize is not None:
                 sub_img = transform(sub_img, resize[0], resize[1], bg_thresh)
-            prediction = classifier.predict([sub_img], **kwargs)
+            prediction = classifier.predict([sub_img], **kwargs)[0]
             LOGGER.debug("prediction: {}".format(prediction))
 
             # Add space if characters are far enough apart
@@ -351,16 +350,16 @@ def split_labels(labels):
     return labels.split(",")
 
 
-def get_args():
-    from argparse import ArgumentParser
-    parser = ArgumentParser()
+def extraction_argument_parser(parser=None):
+    """
+    Generate an ArgumentParser with flags set for extracting text from an
+    image.
+    """
+    if parser is None:
+        from argparse import ArgumentParser
+        parser = ArgumentParser()
 
     parser.add_argument("filename", help="File to extract text from.")
-    parser.add_argument("-s", "--save_dir",
-                        help="Directory to save training data into if the "
-                        "labels are provided.")
-    parser.add_argument("-l", "--labels", type=split_labels, default=[],
-                        help="Labels for each sample, separated by commas.")
     parser.add_argument("--min_line_dist", type=int, default=0,
                         help="Minimum distance between each line. Defaults to "
                         "%(default)d.")
@@ -389,10 +388,6 @@ def get_args():
     parser.add_argument("-p", "--pickle",
                         help="Pickle file containing a saved classifier to "
                         "use to classify text in the image.")
-    parser.add_argument("-k", "--knearest", type=int, default=5,
-                        help="When using a knn classifier, this is the number "
-                        "of neighbors to check. "
-                        "Defaults to %(default)d.")
     parser.add_argument("-v", "--verbose", action="count", default=0,
                         help="Logging verbosity. More verbose means more "
                         "logging info.")
@@ -406,9 +401,8 @@ def get_args():
                         "each word. "
                         "Defaults to %(default)r.")
 
-    args = parser.parse_args()
-
     # Set logging verbosity
+    args = parser.parse_args()
     logging.basicConfig(format="[%(asctime)s] %(levelname)s: %(message)s",
                         stream=sys.stderr)
     if args.verbose == 1:
@@ -416,11 +410,29 @@ def get_args():
     elif args.verbose == 2:
         LOGGER.setLevel(logging.DEBUG)
 
-    return args
+    return parser
+
+
+def region_argument_parser(parser=None):
+    """
+    Generate an ArgumentParser with flags set for analyzing the regions of
+    an image.
+    """
+    if parser is None:
+        from argparse import ArgumentParser
+        parser = ArgumentParser()
+
+    parser.add_argument("-s", "--save_dir",
+                        help="Directory to save training data into if the "
+                        "labels are provided.")
+    parser.add_argument("-l", "--labels", type=split_labels, default=[],
+                        help="Labels for each sample, separated by commas.")
+
+    return parser.parse_args()
 
 
 def main():
-    args = get_args()
+    args = region_argument_parser(extraction_argument_parser())
 
     # Resize the image
     resize_ratio = args.resize
@@ -430,79 +442,67 @@ def main():
     LOGGER.info("Checking image {}".format(args.filename))
     LOGGER.info("resized image shape: {}".format(img.shape))
 
-    if args.pickle:
-        clf = Classifier.from_file(args.pickle)
-        LOGGER.info("Running classifier {}".format(args.pickle))
-        resize = (args.width, args.height)
-        text = get_text(img, clf, resize=resize, k=args.knearest,
-                        bg_thresh=args.thresh, spell_check=args.spell_check,
-                        min_char_dist=args.min_char_dist,
-                        min_line_dist=args.min_line_dist,
-                        min_char_pixels=args.min_char_pixels,
-                        min_line_pixels=args.min_line_pixels)
-        print(text)
+    # Get average background color
+    h, w = img.shape[:2]
+    ravel = img.ravel()
+    fig1 = plt.figure()
+    plt.hist(ravel, 256, [0, 256])
+    avg = np.mean(ravel)
+    std = np.std(ravel)
+    LOGGER.info("Image statistics")
+    LOGGER.info("mean: {}".format(avg))
+    LOGGER.info("std: {}".format(std))
+    LOGGER.info("median: {}".format(np.median(ravel)))
+    thresh = args.thresh
+    if thresh is None:
+        thresh = default_background_threshold(img)
+    img = grayscale_to_black_and_white(img, thresh)
+    LOGGER.info("background threshold: {}".format(thresh))
+    fig1.show()
+
+    # Find colored pixels
+    text_pixels = colored_pixels(img, thresh)
+    fig2 = plt.figure()
+    plt.imshow(img, cmap='gray')
+    xs, ys = zip(*text_pixels)
+    assert len(xs) == len(ys)
+    assert max(xs) <= w
+    assert max(ys) <= h
+
+    plt.scatter(xs, ys, marker=".", color="r")
+    plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
+    fig2.show()
+
+    # Draw line boundaries
+    line_positions = line_regions(img, min_dist=args.min_line_dist,
+                                    bg_thresh=thresh,
+                                    min_pixels=args.min_line_pixels)
+    for pos in line_positions:
+        plt.plot([0, w], [pos[0], pos[0]], color="b")
+        plt.plot([0, w], [pos[1], pos[1]], color="b")
+
+    # Draw character boundaries
+    char_regions = character_regions(
+        img, line_positions, bg_thresh=thresh, min_dist=args.min_char_dist,
+        min_pixels=args.min_char_pixels)
+    assert len(char_regions) == len(line_positions)
+    for i, char_region in enumerate(char_regions):
+        starty, endy = line_positions[i]
+        for startx, endx in char_region:
+            plt.plot([startx, startx], [starty, endy], color="b")
+            plt.plot([endx, endx], [starty, endy], color="b")
+
+    if args.save_dir:
+        if not args.labels:
+            raise RuntimeError(
+                "If you are saving the characters as sample/training data, "
+                "you must provided a comma-separated string of labels to "
+                "save each sample as.")
+        save_images(img, line_positions, char_regions, args.labels,
+                    args.save_dir)
     else:
-        # Get average background color
-        h, w = img.shape[:2]
-        ravel = img.ravel()
-        fig1 = plt.figure()
-        plt.hist(ravel, 256, [0, 256])
-        avg = np.mean(ravel)
-        std = np.std(ravel)
-        LOGGER.info("Image statistics")
-        LOGGER.info("mean: {}".format(avg))
-        LOGGER.info("std: {}".format(std))
-        LOGGER.info("median: {}".format(np.median(ravel)))
-        thresh = args.thresh
-        if thresh is None:
-            thresh = default_background_threshold(img)
-        img = grayscale_to_black_and_white(img, thresh)
-        LOGGER.info("background threshold: {}".format(thresh))
-        fig1.show()
-
-        # Find colored pixels
-        text_pixels = colored_pixels(img, thresh)
-        fig2 = plt.figure()
-        plt.imshow(img, cmap='gray')
-        xs, ys = zip(*text_pixels)
-        assert len(xs) == len(ys)
-        assert max(xs) <= w
-        assert max(ys) <= h
-
-        plt.scatter(xs, ys, marker=".", color="r")
-        plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
-        fig2.show()
-
-        # Draw line boundaries
-        line_positions = line_regions(img, min_dist=args.min_line_dist,
-                                      bg_thresh=thresh,
-                                      min_pixels=args.min_line_pixels)
-        for pos in line_positions:
-            plt.plot([0, w], [pos[0], pos[0]], color="b")
-            plt.plot([0, w], [pos[1], pos[1]], color="b")
-
-        # Draw character boundaries
-        char_regions = character_regions(
-            img, line_positions, bg_thresh=thresh, min_dist=args.min_char_dist,
-            min_pixels=args.min_char_pixels)
-        assert len(char_regions) == len(line_positions)
-        for i, char_region in enumerate(char_regions):
-            starty, endy = line_positions[i]
-            for startx, endx in char_region:
-                plt.plot([startx, startx], [starty, endy], color="b")
-                plt.plot([endx, endx], [starty, endy], color="b")
-
-        if args.save_dir:
-            if not args.labels:
-                raise RuntimeError(
-                    "If you are saving the characters as sample/training data, "
-                    "you must provided a comma-separated string of labels to "
-                    "save each sample as.")
-            save_images(img, line_positions, char_regions, args.labels,
-                        args.save_dir)
-        else:
-            # Keep figures alive
-            raw_input("Press 'Enter' to close the current images.")
+        # Keep figures alive
+        raw_input("Press 'Enter' to close the current images.")
     return 0
 
 

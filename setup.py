@@ -10,7 +10,7 @@ def long_description():
 
 
 def packages():
-    return find_packages(include=["ocr*"])
+    return find_packages(include=["ocr*", "scripts*"])
 
 
 def install_requires():
@@ -38,9 +38,11 @@ setup(
     install_requires=install_requires(),
     entry_points={
         "console_scripts": [
-            "extract=ocr.extract:main",
-            "knn=ocr.classifiers.knn:main",
-            "mlp=ocr.classifiers.mlp:main",
+            "regions=ocr.extract:main",
+            "knn-create=ocr.classifiers.knn:main",
+            "knn-extract=scripts.knnextract:main",
+            "mlp-create=ocr.classifiers.mlp:main",
+            "mlp-extract=scripts.mlpextract:main",
         ]
     }
 )
