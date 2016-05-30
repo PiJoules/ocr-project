@@ -11,73 +11,28 @@ import sys
 import os
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 import pickle
 import string
 import logging
 
 from sklearn.neighbors import NearestNeighbors
 from datetime import datetime
-from ocr.utils import grayscale_to_black_and_white, resize, img_to_vector
+from ocr.utils import transform, split_data
+from ocr.classifiers.base import Classifier
 
 LOGGER = logging.getLogger(__name__)
 ALPHA_NUMERIC = string.digits + string.ascii_uppercase + string.ascii_lowercase
 
 
-def transform(img, width, height, thresh):
-    img = grayscale_to_black_and_white(img, thresh)
-    img = resize(img, width, height, thresh)
-    vec = img_to_vector(img)
-    return vec
-
-
-def split_data(X, y, retain, classes):
-    """Split the data set into training and test data."""
-    test_X = []
-    test_y = []
-    train_X = []
-    train_y = []
-    for i in xrange(classes):
-        start_idx = len(y) / classes * i
-        split_idx = int(start_idx + len(y) / classes * retain)
-        end_idx = len(y) / classes * (i + 1)
-        train_X += X[start_idx:split_idx]
-        train_y += y[start_idx:split_idx]
-        test_X += X[split_idx:end_idx]
-        test_y += y[split_idx:end_idx]
-    return (np.array(train_X), np.array(train_y), np.array(test_X),
-            np.array(test_y))
-
-
-def dict_from_data(data, labels):
-    return {d: labels[i] for i, d in enumerate(data)}
-
-
-class Classifier(object):
-
-    def __init__(self, train, labels, **kwargs):
-        self.__clf = NearestNeighbors(**kwargs).fit(train)
-        self.__labels = labels
-
-    @classmethod
-    def from_file(cls, filename):
-        with open(filename, "rb") as p:
-            return pickle.load(p)
+class KNN(Classifier):
+    """K Nearest Neighbors Classifier."""
 
     def predictions_and_metadata(self, data, k=5):
-        distances, indeces = self.__clf.kneighbors(data, n_neighbors=k)
-        label_pred = [[self.__labels[i] for i in idxs] for idxs in indeces]
+        labels = self.training_labels()
+        distances, indeces = self.classifier().kneighbors(data, n_neighbors=k)
+        label_pred = [[labels[i] for i in idxs] for idxs in indeces]
         predictions = [max(idxs, key=idxs.count) for idxs in label_pred]
         return predictions, label_pred, distances
-
-    def predict(self, data, **kwargs):
-        return self.predictions_and_metadata(data, **kwargs)[0]
-
-    def save(self, filename="classifier.{timestamp}.p"):
-        filename = filename.format(
-            timestamp=datetime.now().strftime("%Y%m%d_%H%M%S"))
-        with open(filename, "wb") as save:
-            pickle.dump(self, save)
 
     def test(self, data, expected, **kwargs):
         predictions, all_predictions, _ = self.predictions_and_metadata(data, **kwargs)
@@ -91,35 +46,70 @@ class Classifier(object):
         print(correct * 100.0 / len(expected), "%")
 
 
-def load_handwritten(args):
+def load_handwritten(root, width, height, classes=62, thresh=None, retain=0.8):
+    """
+    Load typed training data.
+
+    Args:
+        root (str): Root directory containing training data.
+        width (int): Desired width of each sample.
+        height (int): Desired height of each sample.
+        classes (Optional[int]): Number of classes. Defaults to 62.
+        thresh (Optional[int]): Background image threshold. Defaults to None.
+        retain (Optional[float]): Percentage of sample data to retain as
+            training data. The rest is used as test data. Defaults to 0.8.
+
+    Returns:
+        numpy.ndarray: Training data.
+        numpy.ndarray: Training labels.
+        numpy.ndarray: Test data.
+        numpy.ndarray: Test labels.
+    """
     train = []
     labels = []
-    for dirname in os.listdir(args.training_dir):
+    default_thresh = thresh
+    for dirname in os.listdir(root):
         label = dirname[0]
-        full_dirname = os.path.join(args.training_dir, dirname)
+        full_dirname = os.path.join(root, dirname)
         vector = []
         for filename in os.listdir(full_dirname):
             sample = os.path.join(full_dirname, filename)
             img = cv2.imread(sample, 0)
-            if args.thresh is None:
+            if default_thresh is None:
                 ravel = img.ravel()
                 avg = np.mean(ravel)
                 thresh = avg
             else:
-                thresh = args.thresh
-            grayscale = grayscale_to_black_and_white(img, thresh)
-            resized = resize(grayscale, args.width, args.height, thresh)
-            vec = img_to_vector(resized)
+                thresh = default_thresh
+            vec = transform(img, width, height, thresh)
             train.append(vec)
             labels.append(label)
 
-    return split_data(train, labels, args.retain, 62)
+    return split_data(train, labels, retain, classes)
 
 
 def load_typed(root, width, height, samples, classes=62, digits=3,
                digits2=5, thresh=128, retain=0.8):
     """
     Load typed training data.
+
+    Args:
+        root (str): Root directory containing training data.
+        width (int): Desired width of each sample.
+        height (int): Desired height of each sample.
+        samples (int): Number of samples to use for each class.
+        classes (Optional[int]): Number of classes. Defaults to 62.
+        digits (Optional[int]): Number of digits in the sample number.
+        digits2 (Optional[int]): Number of digits in the image number.
+        thresh (Optional[int]): Background image threshold. Defaults to 128.
+        retain (Optional[float]): Percentage of sample data to retain as
+            training data. The rest is used as test data. Defaults to 0.8.
+
+    Returns:
+        numpy.ndarray: Training data.
+        numpy.ndarray: Training labels.
+        numpy.ndarray: Test data.
+        numpy.ndarray: Test labels.
     """
     data = []
     labels = []
@@ -130,8 +120,7 @@ def load_typed(root, width, height, samples, classes=62, digits=3,
                 dirname,
                 "img{}-{}.png".format(str(i).zfill(digits), str(j).zfill(digits2)))
             img = cv2.imread(filename, 0)
-            resized = resize(img, width, height, thresh)
-            vec = img_to_vector(resized)
+            vec = transform(img, width, height, thresh)
             data.append(vec)
             labels.append(ALPHA_NUMERIC[i-1])
     return split_data(data, labels, retain, classes)
@@ -196,7 +185,9 @@ def main():
     args = get_args()
 
     if args.training == "handwritten":
-        train, train_labels, test, test_labels = load_handwritten(args)
+        train, train_labels, test, test_labels = load_handwritten(
+            args.training_dir, args.width, args.height, thresh=args.thresh,
+            retain=args.retain)
     elif args.training == "typed":
         train, train_labels, test, test_labels = load_typed(
             args.training_dir, args.width, args.height, args.samples,
@@ -205,9 +196,10 @@ def main():
         raise RuntimeError("Unknown training type: ".format(args.training))
 
     if args.pickle:
-        nbrs = Classifier.from_file(args.pickle)
+        nbrs = KNN.from_file(args.pickle)
     else:
-        nbrs = Classifier(train, train_labels)
+        clf = NearestNeighbors().fit(train)
+        nbrs = KNN(clf, train_labels)
         if args.save:
             nbrs.save(args.save)
     nbrs.test(test, test_labels, k=args.knearest)
@@ -216,5 +208,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
 

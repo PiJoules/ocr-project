@@ -36,11 +36,11 @@ setup(
     keywords="ocr,knn,mlp",
     packages=packages(),
     install_requires=install_requires(),
-    test_suite="tests",
     entry_points={
         "console_scripts": [
             "extract=ocr.extract:main",
-            "knn=ocr.knn:main",
+            "knn=ocr.classifiers.knn:main",
+            "mlp=ocr.classifiers.mlp:main",
         ]
     }
 )

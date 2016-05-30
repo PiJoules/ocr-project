@@ -5,8 +5,6 @@ import numpy as np
 Crop and resize a grayscale image.
 """
 
-from ocr.classify import Classifier
-
 
 def trim_image(img, white_bg=True, thresh=240):
     """

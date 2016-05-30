@@ -11,13 +11,6 @@ from cropimage import trimmed_image, pad_and_resize
 ALPHA_NUMERIC = string.digits + string.ascii_uppercase + string.ascii_lowercase
 
 
-def showimg(img):
-    cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-    cv2.imshow("image", img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-
 def imgfile_to_grayscale(filename):
     img = cv2.imread(filename)
     return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)

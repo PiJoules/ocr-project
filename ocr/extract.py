@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import logging
 
-from ocr.utils import default_background_threshold, grayscale_to_black_and_white
-from ocr.knn import Classifier, transform
+from ocr.utils import (default_background_threshold,
+                       grayscale_to_black_and_white, transform)
+from ocr.classifiers.knn import Classifier
 from collections import defaultdict
 from correct import correct
 
@@ -247,12 +248,8 @@ def get_text_from_regions(img, line_regs, char_regs, classifier, bg_thresh=None,
 
             if resize is not None:
                 sub_img = transform(sub_img, resize[0], resize[1], bg_thresh)
-            prediction, guesses, _ = classifier.predictions_and_metadata(
-                [sub_img], **kwargs)
-            prediction = prediction[0]
-
+            prediction = classifier.predict([sub_img], **kwargs)
             LOGGER.debug("prediction: {}".format(prediction))
-            LOGGER.debug("guess: {}".format(guesses))
 
             # Add space if characters are far enough apart
             if last_end is not None:
@@ -510,5 +507,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
 

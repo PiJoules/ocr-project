@@ -71,6 +71,32 @@ def img_to_vector(img):
     return np.reshape(img, (img.shape[0] * img.shape[1], ))
 
 
+def transform(img, width, height, thresh):
+    """Wrapper for resizing and vectorizing an image."""
+    img = grayscale_to_black_and_white(img, thresh)
+    img = resize(img, width, height, thresh)
+    vec = img_to_vector(img)
+    return vec
+
+
+def split_data(X, y, retain, classes):
+    """Split the data set into training and test data."""
+    test_X = []
+    test_y = []
+    train_X = []
+    train_y = []
+    for i in xrange(classes):
+        start_idx = len(y) / classes * i
+        split_idx = int(start_idx + len(y) / classes * retain)
+        end_idx = len(y) / classes * (i + 1)
+        train_X += X[start_idx:split_idx]
+        train_y += y[start_idx:split_idx]
+        test_X += X[split_idx:end_idx]
+        test_y += y[split_idx:end_idx]
+    return (np.array(train_X), np.array(train_y), np.array(test_X),
+            np.array(test_y))
+
+
 def show_img(img, cmap="gray"):
     """Just display an image."""
     fig = plt.figure()
