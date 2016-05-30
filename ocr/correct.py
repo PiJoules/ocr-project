@@ -10,6 +10,8 @@ import collections
 import os
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), "data")
+REFERENCE_FILE = os.path.join(DATA_DIR, "texts", "big.txt")
 
 
 def words(text):
@@ -26,7 +28,7 @@ def train(features):
 
 
 # Generate word frequency
-NWORDS = train(words(file(os.path.join(SCRIPT_DIR, "big.txt")).read()))
+NWORDS = train(words(file(REFERENCE_FILE).read()))
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 
 
