@@ -7,6 +7,10 @@ keywords are extracted such that the extracted set of words are seo-able.
 
 ## Dependencies
 This package is dependant on the packages provided in requirements.txt.
+- numpy
+- scipy
+- matplotlib
+- cv2
 
 Optional development packages to install are provided in dev-requirements.txt.
 Precompiling the pure code with cython can allow for an extra boost in
