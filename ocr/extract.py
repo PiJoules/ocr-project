@@ -9,26 +9,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import logging
 
-from ocr.knn import Classifier, grayscale_to_black_and_white, transform
+from ocr.utils import default_background_threshold, grayscale_to_black_and_white
+from ocr.knn import Classifier, transform
 from collections import defaultdict
 from correct import correct
 
 LOGGER = logging.getLogger(__name__)
-
-
-def background_threshold(img):
-    """
-    Get the background threshold for a grayscale image as the average pixel
-    color minus 2*the std of the pixel color.
-
-    If this value is negative, 0 is returned instead.
-    """
-    assert len(img.shape) == 2
-    ravel = img.ravel()
-    avg = np.mean(ravel)
-    std = np.std(ravel)
-    bg_thresh = max(0, avg - 2*std)
-    return bg_thresh
 
 
 def colored_pixels(img, thresh):
@@ -139,7 +125,7 @@ def line_regions(img, bg_thresh=None, **kwargs):
             of text in the image start and end.
     """
     if bg_thresh is None:
-        bg_thresh = background_threshold(img)
+        bg_thresh = default_background_threshold(img)
 
     assert bg_thresh >= 0, "bg_thresh cannot be negative."
     assert len(img.shape) == 2
@@ -173,7 +159,7 @@ def character_regions(img, line_regs, bg_thresh=None, **kwargs):
         sub_img = img[start:end+1, :]
 
         if bg_thresh is None:
-            bg_thresh = background_threshold(sub_img)
+            bg_thresh = default_background_threshold(sub_img)
 
         # Sanity check
         assert w == sub_img.shape[1]
@@ -201,18 +187,6 @@ def imgs_from_regions(img, line_regs, char_regs):
         starty, endy = line_regs[y]
         for x, (startx, endx) in char_region:
             yield y, x, img[starty:endy+1, startx:endx+1]
-
-
-def show_img(img, cmap="gray"):
-    """Just display an image."""
-    fig = plt.figure()
-    plt.imshow(img, cmap=cmap)
-    plt.xticks([]), plt.yticks([])  # Hide tick values on X and Y axis
-    fig.show()
-
-    # Keep image alive by waiting for user input
-    raw_input("Press 'Enter' to close the image.")
-    plt.close(fig)
 
 
 def avg_dist_between_chars(char_regs):
@@ -268,7 +242,7 @@ def get_text_from_regions(img, line_regs, char_regs, classifier, bg_thresh=None,
                          .format((startx, starty), (endx, endy)))
 
             if default_thresh is None:
-                bg_thresh = background_threshold(sub_img)
+                bg_thresh = default_background_threshold(sub_img)
             LOGGER.debug("background threshold: {}".format(bg_thresh))
 
             if resize is not None:
@@ -484,7 +458,7 @@ def main():
         LOGGER.info("median: {}".format(np.median(ravel)))
         thresh = args.thresh
         if thresh is None:
-            thresh = background_threshold(img)
+            thresh = default_background_threshold(img)
         img = grayscale_to_black_and_white(img, thresh)
         LOGGER.info("background threshold: {}".format(thresh))
         fig1.show()

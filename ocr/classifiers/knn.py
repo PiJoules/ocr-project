@@ -17,37 +17,18 @@ import string
 import logging
 
 from sklearn.neighbors import NearestNeighbors
-from cropimage import trimmed_image, pad_and_resize
 from datetime import datetime
+from ocr.utils import grayscale_to_black_and_white, resize, img_to_vector
 
 LOGGER = logging.getLogger(__name__)
 ALPHA_NUMERIC = string.digits + string.ascii_uppercase + string.ascii_lowercase
 
 
-def grayscale_to_black_and_white(img, thresh=None):
-    if thresh is None:
-        ravel = img.ravel()
-        avg = np.mean(ravel)
-        std = np.std(ravel)
-        thresh = max(0, avg - 2*std)
-    return np.array([[0 if pix <= thresh else 255 for pix in row] for row in img]).astype(np.uint8)
-
-
-def resize(img, width, height, thresh):
-    trimmed = trimmed_image(img, thresh=thresh)
-    img = pad_and_resize(trimmed, width, height, bg=255)
-    return img
-
-
-def img_to_feature(img):
-    return np.reshape(img, (img.shape[0] * img.shape[1], ))
-
-
 def transform(img, width, height, thresh):
     img = grayscale_to_black_and_white(img, thresh)
     img = resize(img, width, height, thresh)
-    img = img_to_feature(img)
-    return img
+    vec = img_to_vector(img)
+    return vec
 
 
 def split_data(X, y, retain, classes):
@@ -128,8 +109,8 @@ def load_handwritten(args):
                 thresh = args.thresh
             grayscale = grayscale_to_black_and_white(img, thresh)
             resized = resize(grayscale, args.width, args.height, thresh)
-            feature = img_to_feature(resized)
-            train.append(feature)
+            vec = img_to_vector(resized)
+            train.append(vec)
             labels.append(label)
 
     return split_data(train, labels, args.retain, 62)
@@ -150,8 +131,8 @@ def load_typed(root, width, height, samples, classes=62, digits=3,
                 "img{}-{}.png".format(str(i).zfill(digits), str(j).zfill(digits2)))
             img = cv2.imread(filename, 0)
             resized = resize(img, width, height, thresh)
-            feature = img_to_feature(resized)
-            data.append(feature)
+            vec = img_to_vector(resized)
+            data.append(vec)
             labels.append(ALPHA_NUMERIC[i-1])
     return split_data(data, labels, retain, classes)
 
