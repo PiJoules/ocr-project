@@ -5,6 +5,13 @@ Whole sentences do not need to be fully extracted, as long as a few unique
 keywords are extracted such that the extracted set of words are seo-able.
 
 
+## Environment
+This package was developed in the following environment.
+- Python 2.7.9
+- Mac OSX 10.11.4, Ubuntu 14.04
+- pip 8.1.1
+
+
 ## Dependencies
 This package is dependant on the packages provided in requirements.txt.
 - numpy
@@ -48,28 +55,63 @@ After cloning the repo, just run the following:
 $ python setup.py develop  # Create executables
 ```
 
+To make the ocr packageglobally availale on your computer via pip:
+```sh
+$ python setup.py bdist_wheel  # Create binary distribution
+$ wheel install dist/ocr-{version}-py{2/3}-none-any.whl  # Install created wheel
+$ wheel install-scripts ocr  # Enable package scripts
+````
+The first command with `develop` essentially does the same as the following
+three commands, but these commands allow for the package to be available
+globally through your computer in pip space like any other package installed
+via pip.
+
 
 ## Usage
+The package can be used to create classifiers and use these classifiers to
+classify characters extracted from an image.
 
-### Creating a Classifier
 Before extracting text from an image, you will need to create a classifier to classify
 each character extracted from the image.
 
-#### K Nearest Neighbors
+### K Nearest Neighbors
 Create a knn classifier using handwritten training data in the given dir and save it
 in a file called classifier.p.
 ```sh
-$ knn -t handwritten -d data/training/handwritten -s classifier.p
+$ knn-create -t handwritten -d data/training/handwritten -s classifier.p
 53.2258064516 %  # Success rate on testing data
 ```
 
-### Extracting Text
 Extract text from the given image using the classifier we just made. Resize the image
 to reduce computation time.
 ```sh
-$ extract data/test/sample3.jpg -p classifier.p --resize 0.25
+$ knn-extract data/test/sample3.jpg -p classifier.p --resize 0.25
 6hhVL tS L mUYh kYttrYYr 6b h qYhcY  # Yeah, this isn't very good output
 ```
+
+### Multilayer Perceptron
+Create an mlp classifier using shrinked, handwritten training data in the given
+dir and save it in a file called classifier.p.
+```sh
+$ mlp-create -t shrinked -d data/shrinked20x20/ -s classifier.p
+63.3431085044 %  # Success rate on testing data
+```
+
+Extract text from the given image using the classifier we just made. Resize the image
+to reduce computation time.
+```sh
+$ mlp-extract data/test/sample3.jpg -p classifier.p --resize 0.25
+iYYij jY N CjYj iYjV1Y1L 1j Y YYLG1  # Yeah, this isn't very good output
+```
+
+
+## Development
+To develop/test other classifiers, you would just need to create a classifier
+wrapper from `ocr.classifiers.base.Classifier` and create an extraction
+script that uses this classifier to get text from an image.
+
+Example usages of this are in the KNN and MLP Classifiers in ocr/classifiers/
+and examples of implementing the extraction script are in scripts/.
 
 
 ## Results
@@ -91,7 +133,5 @@ classifiers and features.
 
 
 ## TODO
-- Continue cleanup of ocr/ dir.
 - Update unit tests.
-- Add instructions for using MLP classifier.
 - Make presentation.
