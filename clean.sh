@@ -2,3 +2,4 @@
 
 rm -rf *.egg-info
 find ocr/ -name '*.pyc' -exec rm {} \;
+rm -rf build/ dist/
