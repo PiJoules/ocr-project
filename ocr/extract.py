@@ -447,6 +447,9 @@ def main():
     ravel = img.ravel()
     fig1 = plt.figure()
     plt.hist(ravel, 256, [0, 256])
+    plt.title("Distribution of Pixel Colors in {}".format(args.filename))
+    plt.ylabel("Count")
+    plt.xlabel("Pixel Color")
     avg = np.mean(ravel)
     std = np.std(ravel)
     LOGGER.info("Image statistics")
@@ -462,9 +465,18 @@ def main():
 
     # Find colored pixels
     text_pixels = colored_pixels(img, thresh)
+    xs, ys = zip(*text_pixels)
+
+    # Plot distributions
+    fig3 = plt.figure()
+    plt.hist(ys, h, [0, h])
+    plt.ylabel("Count")
+    plt.xlabel("Y Position from Top")
+    plt.title("Distribution of Colored Pixels along Y-Axis")
+    fig3.show()
+
     fig2 = plt.figure()
     plt.imshow(img, cmap='gray')
-    xs, ys = zip(*text_pixels)
     assert len(xs) == len(ys)
     assert max(xs) <= w
     assert max(ys) <= h
@@ -486,11 +498,23 @@ def main():
         img, line_positions, bg_thresh=thresh, min_dist=args.min_char_dist,
         min_pixels=args.min_char_pixels)
     assert len(char_regions) == len(line_positions)
+
+
     for i, char_region in enumerate(char_regions):
         starty, endy = line_positions[i]
         for startx, endx in char_region:
             plt.plot([startx, startx], [starty, endy], color="b")
             plt.plot([endx, endx], [starty, endy], color="b")
+
+    for i, (starty, endy) in enumerate(line_positions):
+        points = [p for p in text_pixels if starty <= p[1] <= endy]
+        xs2, _ = zip(*points)
+        fig = plt.figure()
+        plt.hist(xs2, bins=w, range=[0, w])
+        plt.ylabel("Count")
+        plt.xlabel("X Position from Left")
+        plt.title("Distribution of Colored Pixels on Line {} along X-Axis".format(i + 1))
+        fig.show()
 
     if args.save_dir:
         if not args.labels:

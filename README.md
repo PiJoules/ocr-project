@@ -104,6 +104,23 @@ $ mlp-extract data/test/sample3.jpg -p classifier.p --resize 0.25
 iYYij jY N CjYj iYjV1Y1L 1j Y YYLG1  # Yeah, this isn't very good output
 ```
 
+### Regions of Text
+To see how the extract module under ocr/ finds regions of characters and lines
+in an image, run the following command. The following command takes sample.jpg,
+scales it down to 0.25 it's original size, and sets the minimum distance
+between each line to 10 pixels.
+```sh
+$ regions data/test/sample.jpg --resize 0.25 -vv --min_line_dist 10
+[2016-05-30 17:16:44,791] INFO: Checking image data/test/sample.jpg
+[2016-05-30 17:16:44,791] INFO: resized image shape: (1000, 748)
+[2016-05-30 17:16:45,186] INFO: Image statistics
+[2016-05-30 17:16:45,186] INFO: mean: 157.318921123
+[2016-05-30 17:16:45,186] INFO: std: 12.2635544028
+[2016-05-30 17:16:45,191] INFO: median: 161.0
+[2016-05-30 17:16:46,387] INFO: background threshold: 132.791812317
+```
+[Regions of text](other/regions.png)
+
 
 ## Development
 To develop/test other classifiers, you would just need to create a classifier
