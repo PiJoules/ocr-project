@@ -119,7 +119,7 @@ $ regions data/test/sample.jpg --resize 0.25 -vv --min_line_dist 10
 [2016-05-30 17:16:45,191] INFO: median: 161.0
 [2016-05-30 17:16:46,387] INFO: background threshold: 132.791812317
 ```
-[Regions of text](other/regions.png)
+![Regions of text](other/regions.png)
 
 
 ## Development
