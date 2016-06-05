@@ -10,7 +10,7 @@ import numpy as np
 import logging
 
 from ocr.utils import (default_background_threshold,
-                       grayscale_to_black_and_white, transform)
+                       grayscale_to_black_and_white, transform, show_img)
 from collections import defaultdict
 from correct import correct
 
@@ -247,6 +247,8 @@ def get_text_from_regions(img, line_regs, char_regs, classifier, bg_thresh=None,
 
             if resize is not None:
                 sub_img = transform(sub_img, resize[0], resize[1], bg_thresh)
+                if sub_img is None:
+                    continue
             prediction = classifier.predict([sub_img], **kwargs)[0]
             LOGGER.debug("prediction: {}".format(prediction))
 
@@ -447,7 +449,7 @@ def main():
     ravel = img.ravel()
     fig1 = plt.figure()
     plt.hist(ravel, 256, [0, 256])
-    plt.title("Distribution of Pixel Colors in {}".format(args.filename))
+    #plt.title("Distribution of Pixel Colors in {}".format(args.filename))
     plt.ylabel("Count")
     plt.xlabel("Pixel Color")
     avg = np.mean(ravel)
@@ -463,6 +465,12 @@ def main():
     LOGGER.info("background threshold: {}".format(thresh))
     fig1.show()
 
+    fig = plt.figure()
+    plt.imshow(img, cmap="gray")
+    plt.xticks([]), plt.yticks([])
+    fig.show()
+
+
     # Find colored pixels
     text_pixels = colored_pixels(img, thresh)
     xs, ys = zip(*text_pixels)
@@ -472,7 +480,7 @@ def main():
     plt.hist(ys, h, [0, h])
     plt.ylabel("Count")
     plt.xlabel("Y Position from Top")
-    plt.title("Distribution of Colored Pixels along Y-Axis")
+    #plt.title("Distribution of Colored Pixels along Y-Axis")
     fig3.show()
 
     fig2 = plt.figure()
@@ -492,6 +500,7 @@ def main():
     for pos in line_positions:
         plt.plot([0, w], [pos[0], pos[0]], color="b")
         plt.plot([0, w], [pos[1], pos[1]], color="b")
+
 
     # Draw character boundaries
     char_regions = character_regions(
@@ -513,8 +522,29 @@ def main():
         plt.hist(xs2, bins=w, range=[0, w])
         plt.ylabel("Count")
         plt.xlabel("X Position from Left")
-        plt.title("Distribution of Colored Pixels on Line {} along X-Axis".format(i + 1))
+        #plt.title("Distribution of Colored Pixels on Line {} along X-Axis".format(i + 1))
         fig.show()
+
+    fig = plt.figure()
+    plt.imshow(img, cmap="gray")
+    plt.xticks([]), plt.yticks([])
+    for pos in line_positions:
+        plt.plot([0, w], [pos[0], pos[0]], color="b")
+        plt.plot([0, w], [pos[1], pos[1]], color="b")
+    fig.show()
+
+    fig = plt.figure()
+    plt.imshow(img, cmap="gray")
+    plt.xticks([]), plt.yticks([])
+    for pos in line_positions:
+        plt.plot([0, w], [pos[0], pos[0]], color="b")
+        plt.plot([0, w], [pos[1], pos[1]], color="b")
+    for i, char_region in enumerate(char_regions):
+        starty, endy = line_positions[i]
+        for startx, endx in char_region:
+            plt.plot([startx, startx], [starty, endy], color="b")
+            plt.plot([endx, endx], [starty, endy], color="b")
+    fig.show()
 
     if args.save_dir:
         if not args.labels:

@@ -50,6 +50,8 @@ def resize(img, width, height, thresh):
         numpy.ndarray: The resized image.
     """
     trimmed = trimmed_image(img, thresh=thresh)
+    if not trimmed.shape[0] or not trimmed.shape[1]:
+        return None
     img = pad_and_resize(trimmed, width, height, bg=255)
     return img
 
@@ -75,6 +77,8 @@ def transform(img, width, height, thresh):
     """Wrapper for resizing and vectorizing an image."""
     img = grayscale_to_black_and_white(img, thresh)
     img = resize(img, width, height, thresh)
+    if img is None:
+        return None
     vec = img_to_vector(img)
     return vec
 

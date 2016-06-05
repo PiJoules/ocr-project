@@ -12,7 +12,7 @@ import os
 import numpy as np
 
 from sklearn.neural_network import MLPClassifier
-from ocr.utils import split_data, default_background_threshold
+from ocr.utils import split_data, default_background_threshold, transform
 from ocr.classifiers.base import Classifier
 
 LOGGER = logging.getLogger(__name__)
@@ -166,12 +166,102 @@ def load_shrinked_imgs(dirname, width=20, samples=55, classes=62, retain=0.8,
     return split_data(X, y, retain, classes)
 
 
+def load_typed(root, width, height, samples, classes=62, digits=3,
+               digits2=5, thresh=128, retain=0.8):
+    """
+    Load typed training data.
+
+    Args:
+        root (str): Root directory containing training data.
+        width (int): Desired width of each sample.
+        height (int): Desired height of each sample.
+        samples (int): Number of samples to use for each class.
+        classes (Optional[int]): Number of classes. Defaults to 62.
+        digits (Optional[int]): Number of digits in the sample number.
+        digits2 (Optional[int]): Number of digits in the image number.
+        thresh (Optional[int]): Background image threshold. Defaults to 128.
+        retain (Optional[float]): Percentage of sample data to retain as
+            training data. The rest is used as test data. Defaults to 0.8.
+
+    Returns:
+        numpy.ndarray: Training data.
+        numpy.ndarray: Training labels.
+        numpy.ndarray: Test data.
+        numpy.ndarray: Test labels.
+    """
+    data = []
+    labels = []
+    for i in xrange(1, classes + 1):
+        dirname = os.path.join(root, "Sample" + str(i).zfill(digits))
+        for j in xrange(1, samples + 1):
+            filename = os.path.join(
+                dirname,
+                "img{}-{}.png".format(str(i).zfill(digits), str(j).zfill(digits2)))
+            img = cv2.imread(filename, 0)
+            vec = transform(img, width, height, thresh)
+            data.append(vec)
+            labels.append(ALPHA_NUMERIC[i-1])
+            LOGGER.debug("Loaded {}".format(filename))
+    return split_data(data, labels, retain, classes)
+
+
+def load_handwritten(root, width, height, classes=62, thresh=None, retain=0.8):
+    """
+    Load typed training data.
+
+    Args:
+        root (str): Root directory containing training data.
+        width (int): Desired width of each sample.
+        height (int): Desired height of each sample.
+        classes (Optional[int]): Number of classes. Defaults to 62.
+        thresh (Optional[int]): Background image threshold. Defaults to None.
+        retain (Optional[float]): Percentage of sample data to retain as
+            training data. The rest is used as test data. Defaults to 0.8.
+
+    Returns:
+        numpy.ndarray: Training data.
+        numpy.ndarray: Training labels.
+        numpy.ndarray: Test data.
+        numpy.ndarray: Test labels.
+    """
+    train = []
+    labels = []
+    default_thresh = thresh
+    for dirname in os.listdir(root):
+        label = dirname[0]
+        full_dirname = os.path.join(root, dirname)
+        vector = []
+        for filename in os.listdir(full_dirname):
+            sample = os.path.join(full_dirname, filename)
+            img = cv2.imread(sample, 0)
+
+
+            if default_thresh is None:
+                ravel = img.ravel()
+                avg = np.mean(ravel)
+                thresh = avg
+            else:
+                thresh = default_thresh
+            vec = transform(img, width, height, thresh)
+            train.append(vec)
+            labels.append(label)
+
+            #show_img(img)
+            #img2 = grayscale_to_black_and_white(img, thresh)
+            #show_img(img2)
+            #img3 = resize(img2, width, height, thresh)
+            #show_img(img3)
+
+    return split_data(train, labels, retain, classes)
+
+
 def get_args():
     from argparse import ArgumentParser
     parser = ArgumentParser()
 
     parser.add_argument("-t", "--training", required=True,
-                        choices=("digits", "english", "shrinked"),
+                        choices=("digits", "english", "shrinked", "typed",
+                                 "handwritten"),
                         help="Training data type.")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-d", "--training_dir",
@@ -242,6 +332,14 @@ def main():
     if args.training == "digits":
         train, train_labels, test, test_labels = load_digits(
             args.training_file, retain=args.retain, width=args.width)
+    elif args.training == "handwritten":
+        train, train_labels, test, test_labels = load_handwritten(
+            args.training_dir, args.width, args.width, thresh=args.thresh,
+            retain=args.retain)
+    elif args.training == "typed":
+        train, train_labels, test, test_labels = load_typed(
+            args.training_dir, args.width, args.width, args.samples,
+            retain=args.retain)
     elif args.training == "english":
         train, train_labels, test, test_labels = load_english_hand(
             args.training_dir, retain=args.retain, width=args.width,
